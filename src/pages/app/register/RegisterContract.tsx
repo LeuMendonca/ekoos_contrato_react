@@ -12,7 +12,11 @@ import { Label } from "../../../components/ui/label"
 import { Separator } from "../../../components/ui/separator"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { NewProduct } from "./components/newProduct"
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/ui/table"
+import { Trash2, Underline } from "lucide-react"
+import { Card } from "../../../components/ui/card"
+import * as z from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 const clientes = [
     { nome: 'Leonardo', cod_pessoa: 1 },
@@ -32,38 +36,64 @@ const contractVariables = [
     "Transporte"
 ]
 
-enum Units{
-    Dias,
-    Semanas,
-    Quinzenas,
-    Meses,
-    Horas,
-    KM,
-    UN
-}
+
 
 interface ProductsProps{
     product: number
     amount: number
-    units: Units
+    units: string
     unitPrice: number
     totalPrice: number
 }
+
+const formProductSchema = z.object({
+    product: z.string(),
+    amount: z.string().min(1),
+    units: z.string().min(1,'Valor minimo exigido: 1'),
+    unitPrice: z.string().min(1,'Valor minimo exigido: 1'),
+    totalPrice: z.string().min(1,'Valor minimo exigido: 1'),
+})
+
+type ProductType = z.infer<typeof formProductSchema>
 
 
 export function RegisterContract() {
     
     const [ products , setProducts ] = useState<ProductsProps[]>([])
 
-    const { register , handleSubmit , control , reset } = useForm()
+    const { register , handleSubmit , control , reset , getValues , watch , setValue , setFocus , formState: { errors } } = useForm<ProductType>({
+        resolver: zodResolver(formProductSchema)
+    })
+
+    watch('amount')
+    watch('unitPrice')
+
+    async function handleAttTotalPrice( ){
+
+            const amountCurrent = +(await getValues('amount'))
+            const priceUnitCurrent = +( await getValues('unitPrice'))
+
+            let calculo = amountCurrent * priceUnitCurrent
+
+            console.log(calculo)
+
+            setValue('totalPrice',  calculo )
+            
+    }
+    
 
     function addNewProduct(data:ProductsProps ){
         setProducts(state => [...state , data])
-        console.log(data)
+        
         reset({
-            product: '',
-            units: ''
+            'amount': undefined,
+            'product': undefined,
+            'units': undefined,
+            'unitPrice': undefined,
+            'totalPrice' : undefined
         });
+
+        setFocus('amount')
     }
 
     return (
@@ -140,9 +170,109 @@ export function RegisterContract() {
             <div className="flex flex-col">
                 <h1 className="text-3xl font-medium mb-6">Produtos</h1>
 
-                <NewProduct addNewProduct={addNewProduct}/>
+                <form className="flex flex-row gap-1" onSubmit={handleSubmit(addNewProduct)}>
+                
+                <div className="flex flex-col gap-1">
+                    <Controller
+                        control={control}
+                        name="product"
+                        render={({ field }) => {
+                        return (
+                            <Select onValueChange={field.onChange} value={ field.value }>
+                                <SelectTrigger className="w-[300px] focus:outline-none flex-1">
+                                    <SelectValue placeholder="Produtos"/> 
+                                </SelectTrigger>
 
-                { products.map( item => item.product)}
+                                <SelectContent>
+                                    <SelectItem value="1">Locação de motor v3</SelectItem>
+                                    <SelectItem value="2">Locação de motor v4</SelectItem>
+                                    <SelectItem value="3">Locação de motor v5</SelectItem>
+                                    <SelectItem value="4">Locação de motor v6</SelectItem>
+                                </SelectContent>
+                            </Select>
+                    )}}/>
+                    <span className="text-sm text-rose-500 pl-1">{ errors.product && errors.product.message}</span>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <Input 
+                        placeholder="Quantidade" 
+                        className="w-[150px]" { ...register('amount', { valueAsNumber: true}) } 
+                        onInput={() => handleAttTotalPrice()}
+                    />
+                    <span className="text-sm text-rose-500 pl-1">{ errors.amount && errors.amount.message}</span>
+                </div>
+
+                <Controller
+                    control={control}
+                    name="units"
+                    render={({ field }) => {
+                    return (
+                        <Select onValueChange={field.onChange} value={ field.value }>
+                            <SelectTrigger className="w-[200px] focus:outline-none">
+                                <SelectValue placeholder="Unidades"/>
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectItem value="Dias">Dias</SelectItem>
+                                <SelectItem value="Semanas">Semanas</SelectItem>
+                                <SelectItem value="Quinzenas">Quizenas</SelectItem>
+                                <SelectItem value="Meses">Meses</SelectItem>
+                                <SelectItem value="Horas">Horas</SelectItem>
+                                <SelectItem value="KM">Quilometros</SelectItem>
+                                <SelectItem value="UN">Unidades</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )}}/>
+
+                <Input 
+                    placeholder="Valor unitário" 
+                    className="w-[150px]" { ...register('unitPrice', { valueAsNumber: true}) } 
+                    onInput={() => handleAttTotalPrice()}
+                />
+
+                <Input type="text" 
+                    placeholder="Valor total" 
+                    className="w-[150px]" 
+                    { ...register('totalPrice') }
+                    value={ getValues('totalPrice') }
+                />
+
+                <Button type="submit" variant={"outline"}>Adicionar</Button>
+                </form>
+                
+                { products.length > 0  &&
+                    <div className="my-5 w-[70%] m-auto">
+                        <Card>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableCell className="w-5">Produto</TableCell>
+                                    <TableCell className="w-5">Quantidade</TableCell>
+                                    <TableCell className="w-5">Unidade</TableCell>
+                                    <TableCell className="w-10">Valor unitario</TableCell>
+                                    <TableCell className="w-10">Valor total</TableCell>
+                                    <TableCell className="w-5"></TableCell>
+                                </TableRow>
+                            </TableHeader>
+
+                            <TableBody>
+                            { products.map( item => (
+                                <TableRow>
+                                    <TableCell>{ item.product }</TableCell>
+                                    <TableCell>{ item.amount }</TableCell>
+                                    <TableCell>{ item.units }</TableCell>
+                                    <TableCell>{ item.unitPrice }</TableCell>
+                                    <TableCell>{ item.totalPrice }</TableCell>
+                                    <TableCell>
+                                            <Trash2 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"/>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table></Card>
+                    </div>
+                }
             </div>
         </div >
     )
