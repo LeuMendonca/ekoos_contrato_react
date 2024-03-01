@@ -11,12 +11,18 @@ import { Checkbox } from "../../../components/ui/checkbox"
 import { Label } from "../../../components/ui/label"
 import { Separator } from "../../../components/ui/separator"
 import { useState } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/ui/table"
-import { Trash2, Underline } from "lucide-react"
+
+
 import { Card } from "../../../components/ui/card"
+
+
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/ui/table"
+import { Frown, Trash2 } from "lucide-react"
+import RegisterItemContract, { ProductsProps } from "./RegisterItemContract"
+import { Controller, useForm } from "react-hook-form"
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { error } from "console"
 
 const clientes = [
     { nome: 'Leonardo', cod_pessoa: 1 },
@@ -36,125 +42,157 @@ const contractVariables = [
     "Transporte"
 ]
 
-
-
-interface ProductsProps{
-    product: string
-    amount: string
-    units: string
-    unitPrice: string
-    totalPrice: string
-}
-
-const formProductSchema = z.object({
-    product: z.string({
-        required_error: 'Informe um produto'
-    }).min(1,'Informe um produto'),
-    amount: z.string().min(1,'Valor minimo exigido: 1'),
-    units: z.string({
-        required_error: 'Informe uma unidade',
-      }).min(1,'Informe uma unidade'),
-    unitPrice: z.string().min(1,'Valor minimo exigido: 1'),
-    totalPrice: z.string().min(1,'Valor minimo exigido: 1'),
+const FormContractSchema = z.object({
+    client: z.string({
+        required_error: "Insira um cliente"
+    }),
+    franchise: z.string({
+        required_error: "Insira uma franquia"
+    }),
+    hours: z.string({
+        required_error: "Insira uma hora"
+    }),
+    initialDate: z.string({
+        required_error: "Insira a data inicial"
+    }).transform( val => val ? new Date(val).toISOString() : "error" ),
+    finalDate: z.string({
+        required_error: "Insira a data final"
+    }).transform( val => val ?  new Date(val).toISOString() : "erro") ,
 })
 
-type ProductType = z.infer<typeof formProductSchema>
+type ContractType = z.infer<typeof FormContractSchema>
 
 
 export function RegisterContract() {
     
-    const [ products , setProducts ] = useState<ProductsProps[]>([])
-
-    const { register , handleSubmit , control , reset , getValues , watch , setValue , setFocus , formState: { errors } } = useForm<ProductType>({
-        resolver: zodResolver(formProductSchema)
+    const { register , control , reset , handleSubmit , formState: { errors}} = useForm<ContractType>({
+        resolver: zodResolver(FormContractSchema)
     })
 
-    watch('amount')
-    watch('unitPrice')
+    function handleNewContract( data ){
 
-    async function handleAttTotalPrice( ){
+        console.log(data)
 
-            const amountCurrent = +(await getValues('amount'))
-            const priceUnitCurrent = +( await getValues('unitPrice'))
-
-            let calculo = amountCurrent * priceUnitCurrent
-
-            console.log(calculo)
-
-            setValue('totalPrice',  calculo.toString() )
-            
-    }
-    
-
-    function addNewProduct(data:ProductsProps ){
-
-        setFocus('amount',{shouldSelect:true})
-
-        setProducts(state => [...state , data])
-        
         reset({
-            'amount': '',
-            'product': '',
-            'units': '',
-            'unitPrice': '',
-            'totalPrice' : ''
-        });
+            client: '',
+            franchise: '',
+            hours: '',
+            initialDate: '',
+            finalDate: '',
+        })
+    }
+
+    // Formulario de Produtos
+    const [ products , setProducts ] = useState<ProductsProps[]>([])
+
+    function handleSetProducts(data: ProductsProps){
+        setProducts(state => [...state , data])
     }
 
     return (
         <div className="flex flex-col gap-1 shadow p-5 mt-2">
             <div className="grid grid-cols-8 flex-row gap-3">
-                <div className="col-span-4 flex flex-col gap-2">
+                <form className="col-span-4 flex flex-col gap-2" onSubmit={handleSubmit(handleNewContract)}>
                     <h1 className="text-3xl font-medium mb-6">Cadastro de Contratos</h1>
-                    <Select>
-                        <SelectTrigger className="w-[608px] focus:outline-none">
-                            <SelectValue placeholder="Cliente" />
-                        </SelectTrigger>
 
-                        <SelectContent>
-                            {clientes.map(cliente => <SelectItem value={`${cliente.cod_pessoa}`}>{cliente.nome}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
+                    <div>
+                        <Controller
+                            control={control}
+                            name="client"
+                            render={({field}) =>{
+                                return(
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <SelectTrigger className="w-[608px] focus:outline-none">
+                                        <SelectValue placeholder="Cliente" />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {clientes.map(cliente => <SelectItem value={`${cliente.cod_pessoa}`}>{cliente.nome}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            )}}
+                        />
+                        { errors.client &&
+                            <span className="text-sm text-rose-500 pl-1">{ errors.client.message }</span>
+                        }
+                    </div>
+                        
 
                     <div className="flex gap-2 grid-span-4">
-                        <Select>
-                            <SelectTrigger className="w-[300px] focus:outline-none"  >
-                                <SelectValue placeholder="Franquia" />
-                            </SelectTrigger>
+                        <div>
+                            <Controller
+                                name="franchise"
+                                control={control}
+                                render={({field}) => {
+                                    return(
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <SelectTrigger className="w-[300px] focus:outline-none"  >
+                                                <SelectValue placeholder="Franquia" />
+                                            </SelectTrigger>
 
-                            <SelectContent>
-                                <SelectItem value="1">Diário</SelectItem>
-                                <SelectItem value="7">Semanal</SelectItem>
-                                <SelectItem value="15">Quinzenal</SelectItem>
-                                <SelectItem value="30">Mensal</SelectItem>
-                            </SelectContent>
-                        </Select>
+                                            <SelectContent>
+                                                <SelectItem value="1">Diário</SelectItem>
+                                                <SelectItem value="7">Semanal</SelectItem>
+                                                <SelectItem value="15">Quinzenal</SelectItem>
+                                                <SelectItem value="30">Mensal</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )
+                                }}
+                            />
+                            { errors.franchise &&
+                            <span className="text-sm text-rose-500 pl-1">{ errors.franchise.message }</span>
+                            }
+                        </div>
 
-                        <Select>
-                            <SelectTrigger className="w-[300px] focus:outline-none">
-                                <SelectValue placeholder="Horas" />
-                            </SelectTrigger>
+                        <div>
+                            <Controller
+                                name="hours"
+                                control={control}
+                                render={({field}) => {
+                                    return(
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <SelectTrigger className="w-[300px] focus:outline-none">
+                                                <SelectValue placeholder="Horas" />
+                                            </SelectTrigger>
 
-                            <SelectContent>
-                                <SelectItem value="8">8 horas</SelectItem>
-                                <SelectItem value="12">12 horas</SelectItem>
-                                <SelectItem value="16">16 horas</SelectItem>
-                                <SelectItem value="24">24 horas</SelectItem>
-                            </SelectContent>
-                        </Select>
+                                            <SelectContent>
+                                                <SelectItem value="8">8 horas</SelectItem>
+                                                <SelectItem value="12">12 horas</SelectItem>
+                                                <SelectItem value="16">16 horas</SelectItem>
+                                                <SelectItem value="24">24 horas</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )
+                                }}
+                            />
+                            { errors.hours &&
+                            <span className="text-sm text-rose-500 pl-1">{ errors.hours.message }</span>
+                            }
+                        </div>
                     </div>
 
                     <div className="flex gap-2 grid-span-4">
-                        <Input type="date" className="w-[300px] focus:outline-none" />
-                        <Input type="date" className="w-[300px] focus:outline-none" />
+                        <div>
+                            <Input type="date" className="w-[300px] focus:outline-none" { ...register('initialDate' , {valueAsDate: false}) }/>
+                            { errors.initialDate &&
+                            <span className="text-sm text-rose-500 pl-1">{ errors.initialDate.message }</span>
+                            }
+                        </div>
+
+                        <div>
+                            <Input type="date" className="w-[300px] focus:outline-none" { ...register('finalDate' , {valueAsDate: false})}/>
+                            { errors.finalDate &&
+                            <span className="text-sm text-rose-500 pl-1">{ errors.finalDate.message }</span>
+                            }
+                        </div>
                     </div>
 
                     <div className="w-[608px] flex justify-end">
-                        <Button variant={"destructive"} className="w-[300px] mt-4 ml-auto">Gerar contrato</Button>
+                        <Button variant={"destructive"} className="w-[300px] mt-4 ml-auto" type="submit">Gerar contrato</Button>
                     </div>
 
-
-                </div>
+                </form>
 
                 <Separator orientation="vertical" className="h-full relative left-10" />
 
@@ -166,128 +204,57 @@ export function RegisterContract() {
                             <Label>{variable}</Label>
                         </span>
                     ))}
-
                 </div>
-            </div>
-
-            <Separator orientation="horizontal" className="w-full my-7" />
-
-            <div className="flex flex-col w-[80%]">
-                <h1 className="text-3xl font-medium mb-6">Produtos</h1>
-
-                <form className="flex flex-row gap-1" onSubmit={handleSubmit(addNewProduct)}>
-                
-                <div className="flex-1">
-                    <Controller
-                        control={control}
-                        name="product"
-                        render={({ field }) => {
-                        return (
-                            <Select onValueChange={field.onChange} value={ field.value }>
-                                <SelectTrigger className="focus:outline-none">
-                                    <SelectValue placeholder="Produtos"/> 
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                    <SelectItem value="1">Locação de motor v3</SelectItem>
-                                    <SelectItem value="2">Locação de motor v4</SelectItem>
-                                    <SelectItem value="3">Locação de motor v5</SelectItem>
-                                    <SelectItem value="4">Locação de motor v6</SelectItem>
-                                    <SelectItem value="5">Locação de motor v7 muito muito muito potente mas é muito potente mesmo</SelectItem>
-                                </SelectContent>
-                            </Select>
-                    )}}/>
-                    <span className="text-sm text-rose-500 pl-1 ">{ errors.product && errors.product.message}</span>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                    <Input 
-                        placeholder="Quantidade" 
-                        className="w-[150px]" { ...register('amount') } 
-                        onInput={() => handleAttTotalPrice()}
-                    />
-                    <span className="text-sm text-rose-500 pl-1">{ errors.amount && errors.amount.message}</span>
-                </div>
+                <Separator orientation="horizontal" className="w-full m-10"/>
 
-                <div>
-                    <Controller
-                        control={control}
-                        name="units"
-                        render={({ field }) => {
-                        return ( 
-                            <Select onValueChange={field.onChange} value={ field.value }>
-                                <SelectTrigger className="w-[200px] focus:outline-none">
-                                    <SelectValue placeholder="Unidades"/>
-                                </SelectTrigger>
+                <div className="flex flex-col">
+                    <h1 className="text-3xl font-medium mb-6">Produtos</h1>
 
-                                <SelectContent>
-                                    <SelectItem value="Dias">Dias</SelectItem>
-                                    <SelectItem value="Semanas">Semanas</SelectItem>
-                                    <SelectItem value="Quinzenas">Quizenas</SelectItem>
-                                    <SelectItem value="Meses">Meses</SelectItem>
-                                    <SelectItem value="Horas">Horas</SelectItem>
-                                    <SelectItem value="KM">Quilometros</SelectItem>
-                                    <SelectItem value="UN">Unidades</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}}/>
+                    <RegisterItemContract handleSetProducts={handleSetProducts}/>
+                    
 
-                        <span className="text-sm text-rose-500 pl-1 break-words">{errors.units && errors.units.message}</span>
-                </div>
+                    
+                        { products.length > 0  ?
+                            <div className="my-5 w-[100%] m-auto col-span-8">
+                                <Card>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableCell className="w-5 text-center">Produto</TableCell>
+                                            <TableCell className="w-5 text-center">Quantidade</TableCell>
+                                            <TableCell className="w-5 text-center">Unidade</TableCell>
+                                            <TableCell className="w-10 text-center">Valor unitario</TableCell>
+                                            <TableCell className="w-10 text-center">Valor total</TableCell>
+                                            <TableCell className="w-5 text-center"></TableCell>
+                                        </TableRow>
+                                    </TableHeader>
 
-                <div>
-                    <Input 
-                        placeholder="Valor unitário" 
-                        className="w-[150px]" { ...register('unitPrice') } 
-                        onInput={() => handleAttTotalPrice()}
-                    />
-                    <span className="text-sm text-rose-500 pl-1">{ errors.unitPrice && errors.unitPrice.message}</span>
-                </div>
-
-                <Input type="text" 
-                    placeholder="Valor total" 
-                    className="w-[150px]" 
-                    { ...register('totalPrice') }
-                    value={ getValues('totalPrice') }
-                    disabled
-                />
-
-                <Button type="submit" variant={"outline"}>Adicionar</Button>
-                </form>
-                
-                { products.length > 0  &&
-                    <div className="my-5 w-[70%] m-auto">
-                        <Card>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableCell className="w-5">Produto</TableCell>
-                                    <TableCell className="w-5">Quantidade</TableCell>
-                                    <TableCell className="w-5">Unidade</TableCell>
-                                    <TableCell className="w-10">Valor unitario</TableCell>
-                                    <TableCell className="w-10">Valor total</TableCell>
-                                    <TableCell className="w-5"></TableCell>
-                                </TableRow>
-                            </TableHeader>
-
-                            <TableBody>
-                            { products.map( item => (
-                                <TableRow>
-                                    <TableCell>{ item.product }</TableCell>
-                                    <TableCell>{ item.amount }</TableCell>
-                                    <TableCell>{ item.units }</TableCell>
-                                    <TableCell>{ item.unitPrice }</TableCell>
-                                    <TableCell>{ item.totalPrice }</TableCell>
-                                    <TableCell>
-                                            <Trash2 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"/>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                            </TableBody>
-                        </Table></Card>
+                                    <TableBody>
+                                    { products.map( item => (
+                                        <TableRow>
+                                            <TableCell className=" text-center">{ item.product }</TableCell>
+                                            <TableCell className=" text-center">{ item.amount }</TableCell>
+                                            <TableCell className=" text-center">{ item.units }</TableCell>
+                                            <TableCell className=" text-center">{ item.unitPrice }</TableCell>
+                                            <TableCell className=" text-center">{ item.totalPrice }</TableCell>
+                                            <TableCell className=" text-center">
+                                                    <Trash2 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"/>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    </TableBody>
+                                </Table></Card>
+                            </div>
+                            :
+                            <div className="w-full flex items-center justify-center gap-1">
+                                
+                                    <Frown className="w-10 h-10 text-zinc-500"/> <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
+                                
+                            </div>
+                        }
                     </div>
-                }
-            </div>
-        </div >
+                </div>
     )
 }
