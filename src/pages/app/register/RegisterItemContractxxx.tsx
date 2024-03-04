@@ -32,8 +32,8 @@ const formProductSchema = z.object({
     units: z.string({
         required_error: 'Informe uma unidade',
       }).min(1,'Informe uma unidade'),
-    unitPrice: z.string().min(1,'Valor minimo exigido: 1'),
-    totalPrice: z.string().min(1,'Valor minimo exigido: 1'),
+    unitPrice: z.string().min(1,'Valor minimo exigido: 1').transform( val => Number(val).toLocaleString('pt-BR',{style: 'currency',currency: 'BRL'})),
+    totalPrice: z.string().min(1,'Valor minimo exigido: 1').transform( val => Number(val).toLocaleString('pt-BR',{style: 'currency',currency: 'BRL'})),
 })
 
 type ProductType = z.infer<typeof formProductSchema>
@@ -69,7 +69,7 @@ export default function RegisterItemContract({handleSetProducts}:RegisterItemCon
             
     }
 
-    function addNewProduct(data:ProductsProps ){
+    function addNewProduct( data:ProductsProps ){
 
         setFocus('amount',{shouldSelect:true})
 
@@ -86,11 +86,9 @@ export default function RegisterItemContract({handleSetProducts}:RegisterItemCon
 
 
   return (
-    
-
       <form
         className="flex flex-row gap-1"
-        onSubmit={handleSubmit(addNewProduct)}
+        onSubmit={() => handleSubmit( addNewProduct)}
       >
         <div className="flex-1">
           <Controller
@@ -122,7 +120,7 @@ export default function RegisterItemContract({handleSetProducts}:RegisterItemCon
           </span>}
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div>
           <Input
             placeholder="Quantidade"
             className="w-[150px]"
@@ -185,7 +183,7 @@ export default function RegisterItemContract({handleSetProducts}:RegisterItemCon
           disabled
         />
 
-        <Button type="submit" variant={"outline"}>
+        <Button type="submit" variant={"default"}>
           Adicionar
         </Button>
       </form>

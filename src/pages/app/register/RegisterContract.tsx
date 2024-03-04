@@ -1,28 +1,19 @@
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../../../components/ui/select"
-import { Input } from "../../../components/ui/input"
-import { Button } from "../../../components/ui/button"
-import { Checkbox } from "../../../components/ui/checkbox"
-import { Label } from "../../../components/ui/label"
-import { Separator } from "../../../components/ui/separator"
 import { useState } from "react"
-
-
-import { Card } from "../../../components/ui/card"
-
-
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/ui/table"
-import { Frown, Trash2 } from "lucide-react"
-import RegisterItemContract, { ProductsProps } from "./RegisterItemContract"
 import { Controller, useForm } from "react-hook-form"
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { error } from "console"
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select"
+import { Input } from "../../../components/ui/input"
+import { Checkbox } from "../../../components/ui/checkbox"
+import { Label } from "../../../components/ui/label"
+import { Separator } from "../../../components/ui/separator"
+import { Button } from "../../../components/ui/button"
+import { Card } from "../../../components/ui/card"
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/ui/table"
+import { Frown, Trash2 } from "lucide-react"
+
+import { RegisterItemsContract, productInputsSchema } from "./RegisterItemsContract"
 
 const clientes = [
     { nome: 'Leonardo', cod_pessoa: 1 },
@@ -33,46 +24,70 @@ const clientes = [
 ]
 
 const contractVariables = [
-    "Cabos",
-    "Chave de transferência automática",
-    "Chave de transferência manual",
-    "Combustível",
-    "Instalação",
-    "Manutenção periódica",
-    "Transporte"
+    {id: "cabos",label: "Cabos"},
+    {id: 'chvTransAuto', label: "Chave de transferência automática"},
+    {id: 'chvTransManual' , label: "Chave de transferência manual"},
+    {id: 'combustivel' , label: "Combustível" },
+    {id: 'instalacao' , label: "Instalação"},
+    {id: 'manutencaoPeriodicaa' , label: "Manutenção periódica" },
+    {id: 'transporte' , label:"Transporte"}
 ]
+
+export interface ProductsProps{
+    product: string
+    amount: number | null
+    units: string
+    unitPrice: number | null 
+    totalPrice: number | null
+}
 
 const FormContractSchema = z.object({
     client: z.string({
         required_error: "Insira um cliente"
-    }),
+    }).min(1, "Insira um cliente"),
     franchise: z.string({
         required_error: "Insira uma franquia"
-    }),
+    }).min(1, "Insira uma franquia"),
     hours: z.string({
         required_error: "Insira uma hora"
-    }),
+    }).min(1, "Insira uma hora"),
     initialDate: z.string({
         required_error: "Insira a data inicial"
-    }).transform( val => val ? new Date(val).toISOString() : "error" ),
+    }).min(1, "Insira a data inicial").transform(val => val && new Date(val).toISOString()),
     finalDate: z.string({
         required_error: "Insira a data final"
-    }).transform( val => val ?  new Date(val).toISOString() : "erro") ,
-})
+    }).min(1, "Insira a data final").transform(val => val && new Date(val).toISOString()),
+    
+    cabos: z.boolean().default(false),
+    chvTransAuto: z.boolean().default(false),
+    chvTransManual: z.boolean().default(false),
+    combustivel: z.boolean().default(false),
+    instalacao: z.boolean().default(false),
+    manutencaoPeriodicaa: z.boolean().default(false),
+    transporte: z.boolean().default(false),
+});
+
+
 
 type ContractType = z.infer<typeof FormContractSchema>
 
-
 export function RegisterContract() {
-    
-    const { register , control , reset , handleSubmit , formState: { errors}} = useForm<ContractType>({
+
+    const { register, control, reset , handleSubmit  , formState: { errors } } = useForm<ContractType>({
         resolver: zodResolver(FormContractSchema)
     })
 
-    function handleNewContract( data ){
+    const [products, setProducts] = useState<ProductsProps[]>([])
 
+    function handleSetProducts(data: ProductsProps) {
+        setProducts(state => [...state, data])
+    }
+
+    function handleSubmitContract(data:ContractType){
         console.log(data)
+    }
 
+    function resetForms() {
         reset({
             client: '',
             franchise: '',
@@ -80,51 +95,46 @@ export function RegisterContract() {
             initialDate: '',
             finalDate: '',
         })
-    }
 
-    // Formulario de Produtos
-    const [ products , setProducts ] = useState<ProductsProps[]>([])
-
-    function handleSetProducts(data: ProductsProps){
-        setProducts(state => [...state , data])
+        setProducts([])
     }
 
     return (
-        <div className="flex flex-col gap-1 shadow p-5 mt-2">
+        <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitContract)}>
             <div className="grid grid-cols-8 flex-row gap-3">
-                <form className="col-span-4 flex flex-col gap-2" onSubmit={handleSubmit(handleNewContract)}>
+                <div className="col-span-4 flex flex-col gap-2">
                     <h1 className="text-3xl font-medium mb-6">Cadastro de Contratos</h1>
 
                     <div>
                         <Controller
                             control={control}
                             name="client"
-                            render={({field}) =>{
-                                return(
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger className="w-[608px] focus:outline-none">
-                                        <SelectValue placeholder="Cliente" />
-                                    </SelectTrigger>
+                            render={({ field }) => {
+                                return (
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger className="w-[608px] focus:outline-none">
+                                            <SelectValue placeholder="Cliente" />
+                                        </SelectTrigger>
 
-                                    <SelectContent>
-                                        {clientes.map(cliente => <SelectItem value={`${cliente.cod_pessoa}`}>{cliente.nome}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            )}}
+                                        <SelectContent>
+                                            {clientes.map(cliente => <SelectItem value={`${cliente.cod_pessoa}`}>{cliente.nome}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                )
+                            }}
                         />
-                        { errors.client &&
-                            <span className="text-sm text-rose-500 pl-1">{ errors.client.message }</span>
+                        {errors.client &&
+                            <span className="text-sm text-rose-500 pl-1">{errors.client.message}</span>
                         }
                     </div>
-                        
 
                     <div className="flex gap-2 grid-span-4">
                         <div>
                             <Controller
                                 name="franchise"
                                 control={control}
-                                render={({field}) => {
-                                    return(
+                                render={({ field }) => {
+                                    return (
                                         <Select onValueChange={field.onChange} value={field.value}>
                                             <SelectTrigger className="w-[300px] focus:outline-none"  >
                                                 <SelectValue placeholder="Franquia" />
@@ -140,17 +150,18 @@ export function RegisterContract() {
                                     )
                                 }}
                             />
-                            { errors.franchise &&
-                            <span className="text-sm text-rose-500 pl-1">{ errors.franchise.message }</span>
-                            }
+
+                        {errors.franchise &&
+                            <span className="text-sm text-rose-500 pl-1">{errors.franchise.message}</span>
+                        }
                         </div>
 
                         <div>
                             <Controller
                                 name="hours"
                                 control={control}
-                                render={({field}) => {
-                                    return(
+                                render={({ field }) => {
+                                    return (
                                         <Select onValueChange={field.onChange} value={field.value}>
                                             <SelectTrigger className="w-[300px] focus:outline-none">
                                                 <SelectValue placeholder="Horas" />
@@ -166,59 +177,55 @@ export function RegisterContract() {
                                     )
                                 }}
                             />
-                            { errors.hours &&
-                            <span className="text-sm text-rose-500 pl-1">{ errors.hours.message }</span>
-                            }
+                            {errors.hours &&<span className="text-sm text-rose-500 pl-1">{errors.hours.message}</span>}
                         </div>
                     </div>
 
                     <div className="flex gap-2 grid-span-4">
                         <div>
-                            <Input type="date" className="w-[300px] focus:outline-none" { ...register('initialDate' , {valueAsDate: false}) }/>
-                            { errors.initialDate &&
-                            <span className="text-sm text-rose-500 pl-1">{ errors.initialDate.message }</span>
-                            }
+                            <Input type="date" className="w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
+                            {errors.initialDate &&<span className="text-sm text-rose-500 pl-1">{errors.initialDate.message}</span>}
                         </div>
 
                         <div>
-                            <Input type="date" className="w-[300px] focus:outline-none" { ...register('finalDate' , {valueAsDate: false})}/>
-                            { errors.finalDate &&
-                            <span className="text-sm text-rose-500 pl-1">{ errors.finalDate.message }</span>
-                            }
+                            <Input type="date" className="w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
+                            {errors.finalDate &&<span className="text-sm text-rose-500 pl-1">{errors.finalDate.message}</span>}
                         </div>
                     </div>
 
-                    <div className="w-[608px] flex justify-end">
-                        <Button variant={"destructive"} className="w-[300px] mt-4 ml-auto" type="submit">Gerar contrato</Button>
-                    </div>
-
-                </form>
+                </div>
 
                 <Separator orientation="vertical" className="h-full relative left-10" />
 
                 <div className="flex flex-col items-start justify-start gap-1 col-span-3 ">
                     <h1 className="text-3xl font-medium mb-6">Variaveis do Contrato</h1>
                     {contractVariables.map(variable => (
-                        <span className="flex gap-1">
-                            <Checkbox className="rounded-[3px] mb-1" />
-                            <Label>{variable}</Label>
-                        </span>
+                            <Controller
+                                control={control}
+                                name={variable.id}
+                                render={({field}) => {
+                                    return(
+                                         <span className="flex gap-1">
+                                            <Checkbox className="rounded-[3px] mb-1" checked={field.value} onCheckedChange={field.onChange}/>
+                                            <Label>{variable.label}</Label>
+                                        </span>
+                                    )
+                                }}
+                                />
+                            
                     ))}
                 </div>
-                </div>
+            </div>
 
-                <Separator orientation="horizontal" className="w-full m-10"/>
+            <Separator orientation="horizontal" className="w-full mt-10 mb-5" />
 
-                <div className="flex flex-col">
-                    <h1 className="text-3xl font-medium mb-6">Produtos</h1>
+            <h1 className="text-3xl font-medium mb-6">Produtos</h1>
 
-                    <RegisterItemContract handleSetProducts={handleSetProducts}/>
-                    
+            <RegisterItemsContract handleSetProducts={ handleSetProducts }/>
 
-                    
-                        { products.length > 0  ?
-                            <div className="my-5 w-[100%] m-auto col-span-8">
-                                <Card>
+            {products.length > 0 ?
+                        <div className="my-5 w-[100%] m-auto col-span-8">
+                            <Card>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -232,29 +239,33 @@ export function RegisterContract() {
                                     </TableHeader>
 
                                     <TableBody>
-                                    { products.map( item => (
-                                        <TableRow>
-                                            <TableCell className=" text-center">{ item.product }</TableCell>
-                                            <TableCell className=" text-center">{ item.amount }</TableCell>
-                                            <TableCell className=" text-center">{ item.units }</TableCell>
-                                            <TableCell className=" text-center">{ item.unitPrice }</TableCell>
-                                            <TableCell className=" text-center">{ item.totalPrice }</TableCell>
-                                            <TableCell className=" text-center">
-                                                    <Trash2 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"/>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                        {products.map(item => (
+                                            <TableRow>
+                                                <TableCell className=" text-center">{item.product}</TableCell>
+                                                <TableCell className=" text-center">{item.amount}</TableCell>
+                                                <TableCell className=" text-center">{item.units}</TableCell>
+                                                <TableCell className=" text-center">{item.unitPrice?.toLocaleString('pt-BR',{style: 'currency',currency: 'BRL'})}</TableCell>
+                                                <TableCell className=" text-center">{item.totalPrice?.toLocaleString('pt-BR',{style: 'currency',currency: 'BRL'})}</TableCell>
+                                                <TableCell className=" text-center">
+                                                    <Trash2 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition" />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                     </TableBody>
                                 </Table></Card>
-                            </div>
-                            :
-                            <div className="w-full flex items-center justify-center gap-1">
-                                
-                                    <Frown className="w-10 h-10 text-zinc-500"/> <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
-                                
-                            </div>
-                        }
-                    </div>
+                        </div>
+                        :
+                        <div className="w-full flex items-center justify-center gap-1 my-10">
+
+                            <Frown className="w-10 h-10 text-zinc-500" /> <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
+
+                        </div>
+                    }
+
+            <div className="ml-auto">
+                    <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto" onClick={() => resetForms()}>Limpar</Button>
+                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={products.length < 1}>Gerar contrato</Button>
                 </div>
+        </form >
     )
 }
