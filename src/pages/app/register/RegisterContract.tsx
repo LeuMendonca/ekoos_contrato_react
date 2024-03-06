@@ -1,27 +1,16 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select"
 import { Input } from "../../../components/ui/input"
 import { Checkbox } from "../../../components/ui/checkbox"
 import { Label } from "../../../components/ui/label"
 import { Separator } from "../../../components/ui/separator"
 import { Button } from "../../../components/ui/button"
-import { Card } from "../../../components/ui/card"
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/ui/table"
-import { Frown, Trash2 } from "lucide-react"
 
-import { RegisterItemsContract, productInputsSchema } from "./RegisterItemsContract"
-
-const clientes = [
-    { nome: 'Leonardo', cod_pessoa: 1 },
-    { nome: 'Rider', cod_pessoa: 2 },
-    { nome: 'Douglas', cod_pessoa: 3 },
-    { nome: 'Gabriel', cod_pessoa: 4 },
-    { nome: 'Thais', cod_pessoa: 5 }
-]
+import { SelectOtimizadoCustomizado } from "../../../components/otimizacaoSelect/selectOtimizadoCustomizado"
+import { api } from "../../../services/Axios"
 
 const contractVariables = [
     {id: "cabos",label: "Cabos"},
@@ -33,16 +22,22 @@ const contractVariables = [
     {id: 'transporte' , label:"Transporte"}
 ]
 
-export interface ProductsProps{
-    product: string
-    amount: number | null
-    units: string
-    unitPrice: number | null 
-    totalPrice: number | null
-}
+const franchise = [
+	{value: "1" , label: 'Diário'},
+	{value: "7" , label: 'Semanal'},
+	{value: "15" , label: 'Quinzenal'},
+	{value: "30" , label: 'Mensal'},
+]
+
+const hours = [
+{ value:"8", label: "8 horas" },
+{ value:"12", label: "12 horas" },
+{ value:"16", label: "16 horas" },
+{ value:"24", label: "24 horas" },
+]
 
 const FormContractSchema = z.object({
-    client: z.string({
+    client: z.number({
         required_error: "Insira um cliente"
     }).min(1, "Insira um cliente"),
     franchise: z.string({
@@ -58,46 +53,50 @@ const FormContractSchema = z.object({
         required_error: "Insira a data final"
     }).min(1, "Insira a data final").transform(val => val && new Date(val).toISOString()),
     
-    cabos: z.boolean().default(false),
-    chvTransAuto: z.boolean().default(false),
-    chvTransManual: z.boolean().default(false),
-    combustivel: z.boolean().default(false),
-    instalacao: z.boolean().default(false),
-    manutencaoPeriodicaa: z.boolean().default(false),
-    transporte: z.boolean().default(false),
+    cabos: z.boolean().default(false).optional(),
+    chvTransAuto: z.boolean().default(false).optional(),
+    chvTransManual: z.boolean().default(false).optional(),
+    combustivel: z.boolean().default(false).optional(),
+    instalacao: z.boolean().default(false).optional(),
+    manutencaoPeriodicaa: z.boolean().default(false).optional(),
+    transporte: z.boolean().default(false).optional(),
 });
-
-
 
 type ContractType = z.infer<typeof FormContractSchema>
 
 export function RegisterContract() {
 
+    // Hooks: useForm , useState 
     const { register, control, reset , handleSubmit  , formState: { errors } } = useForm<ContractType>({
         resolver: zodResolver(FormContractSchema)
     })
 
-    const [products, setProducts] = useState<ProductsProps[]>([])
+    const [ costumers , setCostumers ] = useState([])
 
-    function handleSetProducts(data: ProductsProps) {
-        setProducts(state => [...state, data])
-    }
 
+    // Funções
     function handleSubmitContract(data:ContractType){
         console.log(data)
     }
 
     function resetForms() {
         reset({
-            client: '',
+            client: 0,
             franchise: '',
             hours: '',
             initialDate: '',
             finalDate: '',
         })
-
-        setProducts([])
     }
+
+    async function getCostumers(){
+        const costumers = await api.get('clientes')
+        setCostumers(costumers.data)
+    }
+
+    useEffect(() => {
+        getCostumers()
+    },[])
 
     return (
         <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitContract)}>
@@ -106,22 +105,18 @@ export function RegisterContract() {
                     <h1 className="text-3xl font-medium mb-6">Cadastro de Contratos</h1>
 
                     <div>
-                        <Controller
+                    <Controller
                             control={control}
                             name="client"
-                            render={({ field }) => {
-                                return (
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <SelectTrigger className="w-[608px] focus:outline-none">
-                                            <SelectValue placeholder="Cliente" />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            {clientes.map(cliente => <SelectItem value={`${cliente.cod_pessoa}`}>{cliente.nome}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                )
-                            }}
+                            render={({field}) =>{
+                                return(
+                                    <SelectOtimizadoCustomizado 
+                                    placeholder={"Selecione o cliente"}
+                                    options={costumers}
+                                    field={field}
+                                    width={"608px"}
+                                    />
+                                )}}
                         />
                         {errors.client &&
                             <span className="text-sm text-rose-500 pl-1">{errors.client.message}</span>
@@ -135,18 +130,13 @@ export function RegisterContract() {
                                 control={control}
                                 render={({ field }) => {
                                     return (
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <SelectTrigger className="w-[300px] focus:outline-none"  >
-                                                <SelectValue placeholder="Franquia" />
-                                            </SelectTrigger>
-
-                                            <SelectContent>
-                                                <SelectItem value="1">Diário</SelectItem>
-                                                <SelectItem value="7">Semanal</SelectItem>
-                                                <SelectItem value="15">Quinzenal</SelectItem>
-                                                <SelectItem value="30">Mensal</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <SelectOtimizadoCustomizado 
+                                            placeholder={"Selecione a franquia"}
+                                            options={franchise}
+                                            field={field}
+                                            width={"300px"}
+                                            heigth={"150px"}
+                                        />
                                     )
                                 }}
                             />
@@ -162,18 +152,13 @@ export function RegisterContract() {
                                 control={control}
                                 render={({ field }) => {
                                     return (
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <SelectTrigger className="w-[300px] focus:outline-none">
-                                                <SelectValue placeholder="Horas" />
-                                            </SelectTrigger>
-
-                                            <SelectContent>
-                                                <SelectItem value="8">8 horas</SelectItem>
-                                                <SelectItem value="12">12 horas</SelectItem>
-                                                <SelectItem value="16">16 horas</SelectItem>
-                                                <SelectItem value="24">24 horas</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <SelectOtimizadoCustomizado 
+                                            placeholder={"Selecione as horas"}
+                                            options={hours}
+                                            field={field}
+                                            width={"300px"}
+                                            heigth={"150px"}
+                                        />
                                     )
                                 }}
                             />
@@ -206,8 +191,13 @@ export function RegisterContract() {
                                 render={({field}) => {
                                     return(
                                          <span className="flex gap-1">
-                                            <Checkbox className="rounded-[3px] mb-1" checked={field.value} onCheckedChange={field.onChange}/>
+                                            <Checkbox 
+                                                className="rounded-[3px] mb-1" 
+                                                checked={field.value} 
+                                                onCheckedChange={field.onChange}
+                                            />
                                             <Label>{variable.label}</Label>
+                                            
                                         </span>
                                     )
                                 }}
@@ -216,55 +206,9 @@ export function RegisterContract() {
                     ))}
                 </div>
             </div>
-
-            <Separator orientation="horizontal" className="w-full mt-10 mb-5" />
-
-            <h1 className="text-3xl font-medium mb-6">Produtos</h1>
-
-            <RegisterItemsContract handleSetProducts={ handleSetProducts }/>
-
-            {products.length > 0 ?
-                        <div className="my-5 w-[100%] m-auto col-span-8">
-                            <Card>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableCell className="w-5 text-center">Produto</TableCell>
-                                            <TableCell className="w-5 text-center">Quantidade</TableCell>
-                                            <TableCell className="w-5 text-center">Unidade</TableCell>
-                                            <TableCell className="w-10 text-center">Valor unitario</TableCell>
-                                            <TableCell className="w-10 text-center">Valor total</TableCell>
-                                            <TableCell className="w-5 text-center"></TableCell>
-                                        </TableRow>
-                                    </TableHeader>
-
-                                    <TableBody>
-                                        {products.map(item => (
-                                            <TableRow>
-                                                <TableCell className=" text-center">{item.product}</TableCell>
-                                                <TableCell className=" text-center">{item.amount}</TableCell>
-                                                <TableCell className=" text-center">{item.units}</TableCell>
-                                                <TableCell className=" text-center">{item.unitPrice?.toLocaleString('pt-BR',{style: 'currency',currency: 'BRL'})}</TableCell>
-                                                <TableCell className=" text-center">{item.totalPrice?.toLocaleString('pt-BR',{style: 'currency',currency: 'BRL'})}</TableCell>
-                                                <TableCell className=" text-center">
-                                                    <Trash2 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition" />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table></Card>
-                        </div>
-                        :
-                        <div className="w-full flex items-center justify-center gap-1 my-10">
-
-                            <Frown className="w-10 h-10 text-zinc-500" /> <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
-
-                        </div>
-                    }
-
             <div className="ml-auto">
                     <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto" onClick={() => resetForms()}>Limpar</Button>
-                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={products.length < 1}>Gerar contrato</Button>
+                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit">Gerar contrato</Button>
                 </div>
         </form >
     )
