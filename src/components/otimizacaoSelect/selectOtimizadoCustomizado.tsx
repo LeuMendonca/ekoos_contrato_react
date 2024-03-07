@@ -5,7 +5,7 @@ import { ConsoleConstructorOptions } from "console";
 interface SelectOtimizadoCustomizadoProps {
   options: any;
   field: any;
-  heigth?: string;
+  heigth?: number;
   width?: string;
   placeholder: string;
 }
@@ -28,12 +28,13 @@ export function SelectOtimizadoCustomizado({
   return (
     <Select
       options={options}
-      components={{ MenuList: MenuList, IndicatorSeparator }}
+      components={{ MenuList: MenuList , IndicatorSeparator: null}}
       placeholder={placeholder}
       value={options.find((c: any) => c.value === field.value)}
       onChange={(val) => field.onChange(val?.value)}
       filterOption={createFilter({ ignoreAccents: false })}
-      maxMenuHeight={300}
+      maxMenuHeight={heigth}
+      
       menuPlacement="bottom"
       classNamePrefix="react-select"
       styles={{
@@ -69,11 +70,11 @@ export function SelectOtimizadoCustomizado({
         }),
         menu: (styles) => ({
           ...styles,
-          maxHeigth: "100px",
           borderRadius: "5px",
           borderColor: "#E5E7EB",
           marginTop: ".5rem",
           transition: "2s",
+          width: `${width}`
         }),
       }}
     />

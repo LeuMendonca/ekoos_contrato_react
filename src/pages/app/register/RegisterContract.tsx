@@ -36,6 +36,23 @@ const hours = [
 { value:"24", label: "24 horas" },
 ]
 
+const units = [
+    { value:"Dias" , label: "Dias" },
+    { value:"Semanas" , label: "Semanas" },
+    { value:"Quinzenas" , label: "Quizenas" },
+    { value:"Meses" , label: "Meses" },
+    { value:"Horas" , label: "Horas" },
+    { value:"KM" , label: "Quilometros" },
+    { value:"UN" , label: "Unidades" },
+]
+
+const FormItemsSchema = z.object({
+    product: z.string().min(1,"Insira um produto"),
+    units: z.string().min(1,"Insira um produto"),
+    amount: z.string().min(1,'Quantidade minima: 1'),
+    unitPrice: z.string().min(1,'Valor minimo: 1'),
+})
+
 const FormContractSchema = z.object({
     client: z.number({
         required_error: "Insira um cliente"
@@ -60,18 +77,39 @@ const FormContractSchema = z.object({
     instalacao: z.boolean().default(false).optional(),
     manutencaoPeriodicaa: z.boolean().default(false).optional(),
     transporte: z.boolean().default(false).optional(),
+
+    product: z.string({
+        required_error: "Insira um produto"
+    }).min(1,"Insira um produto"),
+    units: z.string({
+        required_error: "Insira uma unidade"
+    }).min(1,"Insira uma unidade"),
+    amount: z.string().min(1,'Quantidade minima: 1'),
+    unitPrice: z.string().min(1,'Valor minimo: 1'),
 });
 
+
+
 type ContractType = z.infer<typeof FormContractSchema>
+interface ProductsProps {
+    product: string 
+    units: string
+    amount: string
+    unitPrice: string
+}
 
 export function RegisterContract() {
 
     // Hooks: useForm , useState 
-    const { register, control, reset , handleSubmit  , formState: { errors } } = useForm<ContractType>({
-        resolver: zodResolver(FormContractSchema)
+    const { register, control, reset , handleSubmit , getValues , formState: { errors } } = useForm<ContractType>({
+        resolver:  zodResolver(FormContractSchema)
+        
     })
 
     const [ costumers , setCostumers ] = useState([])
+    const [ products , setProducts ] = useState([])
+
+    const [ shoppingCart , setShoppingCart ] = useState<ProductsProps[]>([])
 
 
     // Funções
@@ -79,14 +117,15 @@ export function RegisterContract() {
         console.log(data)
     }
 
-    function resetForms() {
-        reset({
-            client: 0,
-            franchise: '',
-            hours: '',
-            initialDate: '',
-            finalDate: '',
-        })
+    function addProductToShoppingCart(){
+        const objProduct = {
+            product: getValues('product'),
+            units: getValues('units'),
+            amount: getValues('amount'),
+            unitPrice: getValues('unitPrice'),
+        }
+        setShoppingCart( state => [...state , objProduct])
+        // setShoppingCart(( previous ) => [...previous , objProduct])
     }
 
     async function getCostumers(){
@@ -94,8 +133,14 @@ export function RegisterContract() {
         setCostumers(costumers.data)
     }
 
+    async function getProducts(){
+        const products = await api.get('produtos')
+        setProducts(products.data)
+    }
+
     useEffect(() => {
-        getCostumers()
+        getCostumers();
+        getProducts();
     },[])
 
     return (
@@ -206,10 +251,76 @@ export function RegisterContract() {
                     ))}
                 </div>
             </div>
+
+            <Separator orientation="horizontal" className="my-[3rem]"/>
+
+            <div className="flex flex-row gap-1">
+
+                <div className="flex-1">
+                    <Controller
+                        control={control}
+                        name="product"
+                        render={({field}) => {
+                            return(
+                                <SelectOtimizadoCustomizado 
+                                    placeholder={"Selecione um produto"}
+                                    options={products}
+                                    field={field}
+                                    width={"100%"}
+                                    heigth={245}
+                            />
+                            )
+                        }}
+                    />
+                    {errors.product &&<span className="text-sm text-rose-500 pl-1">{errors.product.message}</span>}
+                </div>
+                    
+                <div>
+                    <Controller
+                        name="units"
+                        control={control}
+                        render={ ( { field } ) => {
+                            return(
+                                <SelectOtimizadoCustomizado
+                                options={units}
+                                field={field}
+                                placeholder="Horas"
+                                width="170px"
+                                heigth={245}
+                                />
+                                )
+                            }}
+                    />
+                    {errors.units &&<span className="text-sm text-rose-500 pl-1">{errors.units.message}</span>}
+                </div>
+                
+                <div>
+                    <Input className="w-[170px]" placeholder="Quantidade" { ...register('amount') }/>
+                    {errors.amount &&<span className="text-sm text-rose-500 pl-1">{errors.amount.message}</span>}
+                </div>
+
+                <div>
+                    <Input className="w-[170px]" placeholder="Valor unitário" { ...register('unitPrice')}/>
+                    {errors.unitPrice &&<span className="text-sm text-rose-500 pl-1">{errors.unitPrice.message}</span>}
+                </div>
+
+                <Button type="button" onClick={ () => addProductToShoppingCart()}>Adicionar</Button>
+
+            </div>
+
+            { shoppingCart.map( item => ( 
+                <div>
+                    <p>{item.product}</p> 
+                    <p>{item.units}</p> 
+                    <p>{item.amount}</p> 
+                    <p>{item.unitPrice}</p> 
+                </div>
+            ))}
+
             <div className="ml-auto">
                     <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto" onClick={() => resetForms()}>Limpar</Button>
                     <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit">Gerar contrato</Button>
-                </div>
+            </div>
         </form >
     )
 }
