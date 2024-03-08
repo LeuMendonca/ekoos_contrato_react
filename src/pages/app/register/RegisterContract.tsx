@@ -11,6 +11,7 @@ import { Button } from "../../../components/ui/button"
 
 import { SelectOtimizadoCustomizado } from "../../../components/otimizacaoSelect/selectOtimizadoCustomizado"
 import { api } from "../../../services/Axios"
+import { fromZodError } from 'zod-validation-error';
 
 const contractVariables = [
     {id: "cabos",label: "Cabos"},
@@ -46,13 +47,6 @@ const units = [
     { value:"UN" , label: "Unidades" },
 ]
 
-const FormItemsSchema = z.object({
-    product: z.string().min(1,"Insira um produto"),
-    units: z.string().min(1,"Insira um produto"),
-    amount: z.string().min(1,'Quantidade minima: 1'),
-    unitPrice: z.string().min(1,'Valor minimo: 1'),
-})
-
 const FormContractSchema = z.object({
     client: z.number({
         required_error: "Insira um cliente"
@@ -77,22 +71,30 @@ const FormContractSchema = z.object({
     instalacao: z.boolean().default(false).optional(),
     manutencaoPeriodicaa: z.boolean().default(false).optional(),
     transporte: z.boolean().default(false).optional(),
-
-    product: z.string({
-        required_error: "Insira um produto"
-    }).min(1,"Insira um produto"),
-    units: z.string({
-        required_error: "Insira uma unidade"
-    }).min(1,"Insira uma unidade"),
-    amount: z.string().min(1,'Quantidade minima: 1'),
-    unitPrice: z.string().min(1,'Valor minimo: 1'),
 });
 
+const FormProductSchema = z.object({
+    product: z.string({
+        required_error: "Insira um produto"
+    }),
+    descProduct: z.string().optional(),
+    units: z.string({
+        required_error: "Insira uma unidade"
+    }),
+    amount: z.string(),
+    unitPrice: z.string(),
+})
 
+const MergeFormContractSchema = z.union([
+    FormContractSchema,
+    FormProductSchema
+])
 
-type ContractType = z.infer<typeof FormContractSchema>
+type ContractType = z.infer<typeof MergeFormContractSchema>
+
 interface ProductsProps {
     product: string 
+    descProduct?: string
     units: string
     amount: string
     unitPrice: string
@@ -101,8 +103,8 @@ interface ProductsProps {
 export function RegisterContract() {
 
     // Hooks: useForm , useState 
-    const { register, control, reset , handleSubmit , getValues , formState: { errors } } = useForm<ContractType>({
-        resolver:  zodResolver(FormContractSchema)
+    const { register, control , handleSubmit , reset , watch, setValue , getValues , formState: { errors } } = useForm<ContractType>({
+        resolver:  zodResolver(MergeFormContractSchema)
         
     })
 
@@ -111,21 +113,74 @@ export function RegisterContract() {
 
     const [ shoppingCart , setShoppingCart ] = useState<ProductsProps[]>([])
 
+    // Observando produto
+    watch('amount')
+    watch('units')
+    watch('product')
+    watch('unitPrice')
 
     // Funções
     function handleSubmitContract(data:ContractType){
+        const schemaProduct = FormProductSchema.parse({
+            product: getValues('product'),
+            units: getValues('units'),
+            amount: getValues('amount'),
+            unitPrice: getValues('unitPrice')
+        })
+
+        const schemaContract = FormContractSchema.parse(data)
+
+        if( !schemaContract || !schemaProduct) return;
+
         console.log(data)
+        console.log(shoppingCart)
     }
 
+
     function addProductToShoppingCart(){
+
+        const product = getValues('product')
+
+        const descProduto = products.find( c => c['value'] == product && c["label"])
+
         const objProduct = {
-            product: getValues('product'),
+            product: product,
+            descProduct: descProduto!["label"],
             units: getValues('units'),
             amount: getValues('amount'),
             unitPrice: getValues('unitPrice'),
         }
-        setShoppingCart( state => [...state , objProduct])
-        // setShoppingCart(( previous ) => [...previous , objProduct])
+        
+        try{
+            const schemaProduct = FormProductSchema.parse(objProduct)
+            
+
+            setShoppingCart( state => [...state , objProduct])
+            
+            return true
+
+        }catch(err:any){
+            const validationError = fromZodError(err)
+            const messageError = validationError.message.toString().split(';')
+
+            const listErrors:any = []
+
+            messageError.forEach( message => {
+                const formatListMessage = message.split(" ")
+                const jsonValue = formatListMessage[formatListMessage.length - 1].replace(/"/g, '')
+
+                const textMessage = formatListMessage.slice(1,formatListMessage.indexOf("at")).join(" ")
+
+                const jsonMessage = { input: jsonValue ,  message: textMessage }
+
+                listErrors.push([...listErrors , jsonMessage ])
+            })
+            return listErrors
+        }
+    }
+
+    function disabledAddProduct(){
+        if( !getValues("product") || !getValues("units") || !getValues("amount") || !getValues("unitPrice") ) return true;
     }
 
     async function getCostumers(){
@@ -180,7 +235,7 @@ export function RegisterContract() {
                                             options={franchise}
                                             field={field}
                                             width={"300px"}
-                                            heigth={"150px"}
+                                            heigth={150}
                                         />
                                     )
                                 }}
@@ -202,7 +257,7 @@ export function RegisterContract() {
                                             options={hours}
                                             field={field}
                                             width={"300px"}
-                                            heigth={"150px"}
+                                            heigth={150}
                                         />
                                     )
                                 }}
@@ -262,7 +317,7 @@ export function RegisterContract() {
                         name="product"
                         render={({field}) => {
                             return(
-                                <SelectOtimizadoCustomizado 
+                                <SelectOtimizadoCustomizado
                                     placeholder={"Selecione um produto"}
                                     options={products}
                                     field={field}
@@ -272,7 +327,7 @@ export function RegisterContract() {
                             )
                         }}
                     />
-                    {errors.product &&<span className="text-sm text-rose-500 pl-1">{errors.product.message}</span>}
+                    { !getValues("product") && <span className="text-sm text-rose-500 pl-1">Selecione um produto</span>}
                 </div>
                     
                 <div>
@@ -291,26 +346,27 @@ export function RegisterContract() {
                                 )
                             }}
                     />
-                    {errors.units &&<span className="text-sm text-rose-500 pl-1">{errors.units.message}</span>}
+                    { !getValues("units") && <span className="text-sm text-rose-500 pl-1">Insira uma unidade</span>}
                 </div>
                 
                 <div>
                     <Input className="w-[170px]" placeholder="Quantidade" { ...register('amount') }/>
-                    {errors.amount &&<span className="text-sm text-rose-500 pl-1">{errors.amount.message}</span>}
+                    { !getValues("amount") && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span>}
                 </div>
 
                 <div>
                     <Input className="w-[170px]" placeholder="Valor unitário" { ...register('unitPrice')}/>
-                    {errors.unitPrice &&<span className="text-sm text-rose-500 pl-1">{errors.unitPrice.message}</span>}
+                    { !getValues("unitPrice") && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span>}
                 </div>
 
-                <Button type="button" onClick={ () => addProductToShoppingCart()}>Adicionar</Button>
+                <Button type="button" onClick={ () => addProductToShoppingCart()} disabled={disabledAddProduct()}>Adicionar</Button>
 
             </div>
 
             { shoppingCart.map( item => ( 
                 <div>
                     <p>{item.product}</p> 
+                    <p>{item.descProduct }</p>
                     <p>{item.units}</p> 
                     <p>{item.amount}</p> 
                     <p>{item.unitPrice}</p> 
@@ -318,7 +374,7 @@ export function RegisterContract() {
             ))}
 
             <div className="ml-auto">
-                    <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto" onClick={() => resetForms()}>Limpar</Button>
+                    <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto" >Limpar</Button>
                     <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit">Gerar contrato</Button>
             </div>
         </form >

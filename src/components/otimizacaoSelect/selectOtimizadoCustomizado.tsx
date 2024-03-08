@@ -30,11 +30,10 @@ export function SelectOtimizadoCustomizado({
       options={options}
       components={{ MenuList: MenuList , IndicatorSeparator: null}}
       placeholder={placeholder}
-      value={options.find((c: any) => c.value === field.value)}
+      value={options.find((c: any) => c.value === field.value )}
       onChange={(val) => field.onChange(val?.value)}
       filterOption={createFilter({ ignoreAccents: false })}
       maxMenuHeight={heigth}
-      
       menuPlacement="bottom"
       classNamePrefix="react-select"
       styles={{
