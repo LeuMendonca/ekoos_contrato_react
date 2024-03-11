@@ -1,6 +1,7 @@
 import { Button } from "../../../components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu";
 import { TableCell, TableRow } from "../../../components/ui/table";
+import { api } from "../../../services/Axios";
 
 interface ContractProps {
     seq_contrato: number
@@ -11,7 +12,12 @@ interface ContractProps {
     dateEnd: string
 }
 
-export function ContractTableRow( { contract }: { contract: ContractProps } ) {
+interface TableContractProps{
+    contract: ContractProps,
+    deleteContract: ( seq_contrato:number ) => void
+}
+
+export function ContractTableRow( { contract , deleteContract }:TableContractProps  ) {
     return (
         <TableRow>
             <TableCell className="text-center">{contract.seq_contrato}</TableCell>
@@ -29,7 +35,7 @@ export function ContractTableRow( { contract }: { contract: ContractProps } ) {
 
                         <DropdownMenuContent>
                             <DropdownMenuItem>Atualizar</DropdownMenuItem>
-                            <DropdownMenuItem>Excluir</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => deleteContract(contract.seq_contrato)}>Excluir</DropdownMenuItem>
                             <DropdownMenuItem>Concluir</DropdownMenuItem>
                             <DropdownMenuItem>Imprimir</DropdownMenuItem>
                             <DropdownMenuItem>Nota remessa</DropdownMenuItem>

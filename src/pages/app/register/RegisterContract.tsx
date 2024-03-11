@@ -18,7 +18,6 @@ import { contractVariables, franchise, hours, units } from "./Utilities/Utilitie
 
 import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { ContractTableRow } from "../contract/contract-table-row"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -80,9 +79,12 @@ export function RegisterContract() {
     const [ unitPrice , setUnitPrice ] = useState(0)
     const [ totalPriceContract , setTotalPriceContract ] = useState(0)
 
+    useEffect(() =>{
+        setValue('totalPriceContract' , totalPriceContract)
+    },[totalPriceContract])
+
     // Funções
     async function handleSubmitContract(data:ContractType){
-
         const responsePost = await api.post('new-contract',{
             data:data,
             listItems: shoppingCart,
@@ -96,7 +98,6 @@ export function RegisterContract() {
             })
 
             setInterval(() => window.location.href = "/" , 2000)
-            
         }
     }
 
