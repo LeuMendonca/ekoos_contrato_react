@@ -9,47 +9,16 @@ import { Label } from "../../../components/ui/label"
 import { Separator } from "../../../components/ui/separator"
 import { Button } from "../../../components/ui/button"
 
-import { SelectOtimizadoCustomizado } from "../../../components/otimizacaoSelect/selectOtimizadoCustomizado"
+import { SelectItemOtimizadoCustomizado, SelectOtimizadoCustomizado } from "../../../components/otimizacaoSelect/selectOtimizadoCustomizado"
 import { api } from "../../../services/Axios"
-import { fromZodError } from 'zod-validation-error';
 import { Card } from "../../../components/ui/card"
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/ui/table"
+import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow } from "../../../components/ui/table"
 import { Frown, Trash2 } from "lucide-react"
+import { contractVariables, franchise, hours, units } from "./Utilities/Utilities"
 
-const contractVariables = [
-    {id: "cabos",label: "Cabos"},
-    {id: 'chvTransAuto', label: "Chave de transferência automática"},
-    {id: 'chvTransManual' , label: "Chave de transferência manual"},
-    {id: 'combustivel' , label: "Combustível" },
-    {id: 'instalacao' , label: "Instalação"},
-    {id: 'manutencaoPeriodicaa' , label: "Manutenção periódica" },
-    {id: 'transporte' , label:"Transporte"}
-]
-
-const franchise = [
-	{value: "1" , label: 'Diário'},
-	{value: "7" , label: 'Semanal'},
-	{value: "15" , label: 'Quinzenal'},
-	{value: "30" , label: 'Mensal'},
-]
-
-const hours = [
-{ value:"8", label: "8 horas" },
-{ value:"12", label: "12 horas" },
-{ value:"16", label: "16 horas" },
-{ value:"24", label: "24 horas" },
-]
-
-const units = [
-    { value: "" , label: "Selecione unidades"},
-    { value:"Dias" , label: "Dias" },
-    { value:"Semanas" , label: "Semanas" },
-    { value:"Quinzenas" , label: "Quizenas" },
-    { value:"Meses" , label: "Meses" },
-    { value:"Horas" , label: "Horas" },
-    { value:"KM" , label: "Quilometros" },
-    { value:"UN" , label: "Unidades" },
-]
+import {  toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ContractTableRow } from "../contract/contract-table-row"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -67,6 +36,7 @@ const FormContractSchema = z.object({
     finalDate: z.string({
         required_error: "Insira a data final"
     }).min(1, "Insira a data final"),
+    totalPriceContract: z.number().optional(),
     
     cabos: z.boolean().default(false).optional(),
     chvTransAuto: z.boolean().default(false).optional(),
@@ -77,126 +47,103 @@ const FormContractSchema = z.object({
     transporte: z.boolean().default(false).optional(),
 });
 
-const FormProductSchema = z.object({
-    product: z.string({
-        required_error: "Insira um produto"
-    }).optional(),
-    descProduct: z.string().optional(),
-    units: z.string({
-        required_error: "Insira uma unidade"
-    }),
-    amount: z.string(),
-    unitPrice: z.string(),
-})
-
-const MergeFormContractSchema = z.union([
-    FormContractSchema,
-    FormProductSchema
-])
-
-type ContractType = z.infer<typeof MergeFormContractSchema>
+type ContractType = z.infer<typeof FormContractSchema>
 
 interface ProductsProps {
     id: number
-    product: string 
-    descProduct?: string
-    units: string 
-    amount: string
-    unitPrice: string
+    product: string | number
+    descProduct: string
+    unit: string 
+    amount: number
+    unitPrice: number
 }
 
 export function RegisterContract() {
 
     // Hooks: useForm , useState 
-    const { register, control , handleSubmit , reset , watch, getValues , formState: { errors } } = useForm<ContractType>({
-        resolver:  zodResolver(MergeFormContractSchema)
+    const { register, control , handleSubmit , setValue , reset , formState: { errors } } = useForm<ContractType>({
+        resolver:  zodResolver(FormContractSchema),
+        defaultValues: {
+            totalPriceContract: 0
+        }
     })
 
-    const [ costumers , setCostumers ] = useState([])
     const [ products , setProducts ] = useState<ProductsProps[]>([])
+    const [ costumers , setCostumers ] = useState([])
 
     const [ shoppingCart , setShoppingCart ] = useState<ProductsProps[]>([])
-    const [ id , setId ] = useState<number>(1)
 
-    // Observando produto
-    watch('amount')
-    watch('units')
-    watch('product')
-    watch('unitPrice')
+    const [ id , setId ] = useState(1)
+    const [ item , setItem ] = useState('0')
+    const [ unit , setUnit ] = useState('')
+    const [ amount , setAmount ] = useState(0)
+    const [ unitPrice , setUnitPrice ] = useState(0)
+    const [ totalPriceContract , setTotalPriceContract ] = useState(0)
 
     // Funções
-    function handleSubmitContract(data:ContractType){
-        const schemaProduct = FormProductSchema.parse({
-            product: getValues('product'),
-            units: getValues('units'),
-            amount: getValues('amount'),
-            unitPrice: getValues('unitPrice')
+    async function handleSubmitContract(data:ContractType){
+
+        const responsePost = await api.post('new-contract',{
+            data:data,
+            listItems: shoppingCart,
         })
 
-        const schemaContract = FormContractSchema.parse(data)
 
-        if( !schemaContract || !schemaProduct) return;
+        console.log(responsePost.status)
+        if( responsePost.status == 200){
+            toast.success("Contrato cadastrado com sucesso!",{
+                autoClose: 1000
+            })
 
-        api.post('new-contract',data)
-        console.log(data)
-        console.log(shoppingCart)
-    }
-
-
-    function addProductToShoppingCart(){
-
-        const product = getValues('product')
-
-        const descProduto = products.find( c => c['value'] == product && c["label"])
-
-        const objProduct = {
-            id: id,
-            product: product,
-            descProduct: descProduto!['label'],
-            units: getValues('units'),
-            amount: getValues('amount'),
-            unitPrice: getValues('unitPrice'),
-        }
-        
-        try{
-            const schemaProduct = FormProductSchema.parse(objProduct)
-
-            setShoppingCart( state => [...state , objProduct])
-            setId( state => state + 1)
+            setInterval(() => window.location.href = "/" , 2000)
             
-            reset({
-                product: '0',
-                units: '',
-                amount: '',
-                unitPrice: ''
-            })
-
-        }catch(err:any){
-            const validationError = fromZodError(err)
-            const messageError = validationError.message.toString().split(';')
-
-            const listErrors:any = []
-
-            messageError.forEach( message => {
-                const formatListMessage = message.split(" ")
-                const jsonValue = formatListMessage[formatListMessage.length - 1].replace(/"/g, '')
-
-                const textMessage = formatListMessage.slice(1,formatListMessage.indexOf("at")).join(" ")
-
-                const jsonMessage = { input: jsonValue ,  message: textMessage }
-
-                listErrors.push([...listErrors , jsonMessage ])
-            })
-            return listErrors
         }
     }
 
-    function disabledAddProduct(){
-        if( getValues("product") == '0' || !getValues("units") || !getValues("amount") || !getValues("unitPrice") ) return true;
+
+    async function addProductToShoppingCart(){
+
+        const descProduct = products.find( c => c.value == item && c)
+
+        console.log(item)
+
+        const objNewProduct:ProductsProps = {
+            id: id,
+            product: item,
+            descProduct: descProduct['label'],
+            unit: unit ,
+            amount: amount,
+            unitPrice: unitPrice
+        }
+
+        setId( state => state + 1)
+
+        setShoppingCart(state => [...state , objNewProduct])
+
+        setItem('0')
+        setUnit('')
+        setAmount(0)
+        setUnitPrice(0)
+        setTotalPriceContract(state => state + ( +unitPrice * +amount ) )
+
+        toast.success("Produto adicionado com sucesso!",{
+            autoClose: 2500
+        })
     }
 
     function deleteItemShoppingCart( idProduct: number){
+        const contractDeleted = shoppingCart.filter( value => value.id == idProduct)[0]
+        
+        const recalculatingTotalContractValue = +contractDeleted["amount"] * +contractDeleted["unitPrice"]
+        setTotalPriceContract(recalculatingTotalContractValue)
+
         setShoppingCart( shoppingCart.filter( value => value.id != idProduct ) )
+    }
+
+    function disabledButtonAdd(){
+        if( item == '0' || !unit || amount == 0 || unitPrice == 0 ){
+            return true
+        }
     }
 
     // Requisições API
@@ -209,6 +156,8 @@ export function RegisterContract() {
         const products = await api.get('produtos')
         setProducts(products.data)
     }
+
+
 
     useEffect(() => {
         getCostumers();
@@ -318,8 +267,7 @@ export function RegisterContract() {
                                         </span>
                                     )
                                 }}
-                                />
-                            
+                            />
                     ))}
                 </div>
             </div>
@@ -330,58 +278,52 @@ export function RegisterContract() {
                 
                 <div className="flex-1">
                     <span className="text-md font-medium">Produto</span>
-                    <Controller
-                        control={control}
-                        name="product"
-                        render={({field}) => {
-                            return(
-                                <SelectOtimizadoCustomizado
-                                    placeholder={"Selecione um produto"}
-                                    options={products}
-                                    field={field}
-                                    width={"100%"}
-                                    heigth={245}
-                            />
-                            )
-                        }}
+                   
+                    <SelectItemOtimizadoCustomizado
+                        placeholder={"Selecione um produto"}
+                        options={products}
+                        width={"100%"}
+                        heigth={245}
+                        value={item}
+                        onChange={setItem}
                     />
-                    { getValues("product") === '0' ? <span className="text-sm text-rose-500 pl-1">Selecione um produto</span> : <span>{''}</span>}
+                    {item == '0' && <span className="text-sm text-rose-500 pl-1">Selecione no mínimo um produto</span> }
                 </div>
-                    
+
                 <div>
                     <span className="text-md font-medium">Unidades</span>
-                    <Controller
-                        name="units"
-                        control={control}
-                        render={ ( { field } ) => {
-                            return(
-                                <SelectOtimizadoCustomizado
-                                    options={units}
-                                    field={field}
-                                    placeholder="Ex: Dias,Semanas"
-                                    width="170px"
-                                    heigth={245}
-                                />
-                                )
-                            }}
+                    
+                    <SelectItemOtimizadoCustomizado
+                        options={units}
+                        placeholder="Ex: Dias,Semanas"
+                        width="170px"
+                        heigth={245}
+                        value={unit}
+                        onChange={setUnit}
                     />
-                    { !getValues("units") && <span className="text-sm text-rose-500 pl-1">Insira uma unidade</span>}
+                    { !unit && <span className="text-sm text-rose-500 pl-1">Selecione uma unidade</span> }
                 </div>
                 
                 <div>
                 <span className="text-md font-medium">Quantidade</span>
-                    <Input className="w-[170px]" placeholder="Ex: 10" { ...register('amount') }/>
-                    { !getValues("amount") && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span>}
+                    <Input type="number" className="w-[170px]" placeholder="Ex: 10" value={amount!} onChange={( e ) => setAmount( e.target.value )}/>
+                    { amount < 1 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span> }
                 </div>
 
                 <div>
                     <span className="text-md font-medium">Valor unitario</span>
-                    <Input className="w-[170px]" placeholder="Ex: 3.65" { ...register('unitPrice')}/>
-                    { !getValues("unitPrice") && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span>}
+                    <Input type="number" className="w-[170px]" placeholder="Ex: 3.65" value={unitPrice!} onChange={(e) => setUnitPrice(e.target.value)}/>
+                    { unitPrice <= 0 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 0.01</span> }
                 </div>
 
                 <div className="flex h-[64px] items-center">
-                    <Button type="button" className="self-end transition-opacity" onClick={ () => addProductToShoppingCart()} disabled={disabledAddProduct()}>Adicionar</Button>
+                    <Button 
+                        type="button" 
+                        className="self-end transition-opacity" 
+                        onClick={() => addProductToShoppingCart()} 
+                        disabled={disabledButtonAdd()}>
+                            Adicionar
+                    </Button>
                 </div>
 
             </div>
@@ -410,7 +352,7 @@ export function RegisterContract() {
                                                 <TableCell className=" text-center">{ item.product }</TableCell>
                                                 <TableCell className=" text-center">{ item.descProduct }</TableCell>
                                                 <TableCell className=" text-center">{ item.amount }</TableCell>
-                                                <TableCell className=" text-center">{ item.units }</TableCell>
+                                                <TableCell className=" text-center">{ item.unit }</TableCell>
                                                 <TableCell className=" text-center">{ (+item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
                                                 <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
                                                 <TableCell className=" text-center">
@@ -422,6 +364,13 @@ export function RegisterContract() {
                                             </TableRow>
                                         ))}
                                         </TableBody>
+
+                                        <TableFooter>
+                                            <TableRow>
+                                            <TableCell colSpan={4}></TableCell>
+                                            <TableCell colSpan={3} className="text-end">Valor total do contrato: {totalPriceContract}</TableCell>
+                                            </TableRow>
+                                        </TableFooter>
                                     </Table>
                                 </Card>
                             </div>
@@ -435,9 +384,9 @@ export function RegisterContract() {
                     </div>
 
             <div className="ml-auto">
-                    <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto" onClick={() => resetForms()}>Limpar</Button>
+                    <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto">Limpar</Button>
 
-                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit">Gerar contrato</Button>
+                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={shoppingCart.length == 0}>Gerar contrato</Button>
             </div>
         </form >
     )

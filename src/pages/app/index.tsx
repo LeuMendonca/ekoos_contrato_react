@@ -1,35 +1,21 @@
+import { useEffect, useState } from "react";
 import { Table, TableHeader, TableCell, TableRow, TableBody } from "../../components/ui/table";
 import { ContractFilterTable } from "./contract/contract-filter-table";
 import { ContractTableRow } from "./contract/contract-table-row";
-
-const contracts = [
-    { 
-        seq_contrato: 20,
-        cod_pessoa: 100,
-        name: "Leonardo Mendonça",
-        currencyContract: 300,
-        dateStart: '01/01/2024',
-        dateEnd: '30/04/2024'
-    },
-    { 
-        seq_contrato: 21,
-        cod_pessoa: 153,
-        name: "Ana Luiza Parreira",
-        currencyContract: 362,
-        dateStart: '01/01/2024',
-        dateEnd: '30/04/2024'
-    },
-    { 
-        seq_contrato: 22,
-        cod_pessoa: 165,
-        name: "Carneirão Cristian",
-        currencyContract: 392,
-        dateStart: '01/01/2024',
-        dateEnd: '30/04/2024'
-    }
-]
+import { api } from "../../services/Axios";
 
 export function Index(){
+    
+    const [ contracts , setContracts ] = useState([])
+
+    async function getContracts(){
+        const contracts = await api.get('contratos')
+        setContracts(contracts.data)
+    }
+
+    useEffect( () => {
+        getContracts();
+    },[])
     return(
         <main className="p-2">
 
