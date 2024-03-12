@@ -63,6 +63,7 @@ export function RegisterContract() {
     const { register, control , handleSubmit , setValue , reset , formState: { errors } } = useForm<ContractType>({
         resolver:  zodResolver(FormContractSchema),
         defaultValues: {
+            client: 0,
             totalPriceContract: 0
         }
     })
@@ -297,7 +298,7 @@ export function RegisterContract() {
                     <SelectItemOtimizadoCustomizado
                         options={units}
                         placeholder="Ex: Dias,Semanas"
-                        width="170px"
+                        width="200px"
                         heigth={245}
                         value={unit}
                         onChange={setUnit}
@@ -369,7 +370,7 @@ export function RegisterContract() {
                                         <TableFooter>
                                             <TableRow>
                                             <TableCell colSpan={4}></TableCell>
-                                            <TableCell colSpan={3} className="text-end">Valor total do contrato: {totalPriceContract}</TableCell>
+                                            <TableCell colSpan={3} className="text-end">Valor total do contrato: {totalPriceContract.toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'})}</TableCell>
                                             </TableRow>
                                         </TableFooter>
                                     </Table>

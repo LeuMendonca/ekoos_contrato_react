@@ -27,7 +27,7 @@ export function ContractTableRow( { contract , deleteContract , closeContract , 
             <TableCell className="text-center">{contract.seq_contrato}</TableCell>
             <TableCell className="text-center">{contract.cod_pessoa}</TableCell>
             <TableCell className="font-semibold">{contract.name}</TableCell>
-            <TableCell className="text-center">R$ {contract.currencyContract}</TableCell>
+            <TableCell className="text-center">{contract.currencyContract.toLocaleString('pt-br', {style: 'currency' , currency: 'brl'})}</TableCell>
             <TableCell className="text-center">{contract.dateStart}</TableCell>
             <TableCell className="text-center">{contract.dateEnd}</TableCell>
             <TableCell>
@@ -39,11 +39,9 @@ export function ContractTableRow( { contract , deleteContract , closeContract , 
 
                         <DropdownMenuContent>
                             <DropdownMenuItem>Atualizar</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => deleteContract(contract.seq_contrato)}>Excluir</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => closeContract(contract.seq_contrato)}>Concluir</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => deleteContract(contract.seq_contrato)}>Excluir</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => printContract(contract.seq_contrato)}>Imprimir</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => generatedInvoice(contract.seq_contrato)}>Nota remessa</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => generatedServiceInvoice(contract.seq_contrato)}>Nota serviço</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

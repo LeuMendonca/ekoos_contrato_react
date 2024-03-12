@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { Table, TableHeader, TableCell, TableRow, TableBody } from "../../components/ui/table";
-import { ContractFilterTable } from "./contract/contract-filter-table";
 import { ContractTableRow } from "./contract/contract-table-row";
 import { api } from "../../services/Axios";
 import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
-import { useForm } from "react-hook-form";
-import { Search } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios, { AxiosError } from "axios";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../components/ui/select";
 
 export function Index(){
     
@@ -165,6 +162,22 @@ export function Index(){
                     value={queryContract}
                     onChange={( e ) => setQueryContract(e.target.value)}
                 />
+
+                <Select>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a fruit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                        <SelectLabel>Fruits</SelectLabel>
+                        <SelectItem value="apple">Apple</SelectItem>
+                        <SelectItem value="banana">Banana</SelectItem>
+                        <SelectItem value="blueberry">Blueberry</SelectItem>
+                        <SelectItem value="grapes">Grapes</SelectItem>
+                        <SelectItem value="pineapple">Pineapple</SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
             </div>
 
             <Table className="border rounded-md">

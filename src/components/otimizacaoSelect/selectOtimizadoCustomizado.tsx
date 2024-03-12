@@ -53,39 +53,55 @@ export function SelectOtimizadoCustomizado({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-
           height: "2.5rem",
           width: `${width}`,
-
           borderRadius: "calc(var(--radius) - 2px)",
-          border: "1px solid #E5E7EB",
-
-          backgroundColor: "#fff",
-
+          borderWidth: "1px",
+          backgroundColor: 'hsl(var(--background-color))',
           padding: "0.25rem 0.1rem",
-
           fontSize: "0.875rem",
+        }),
+        singleValue: ( value) => ({
+          ...value,
+          color: 'hsl(var(-muted-foreground))',
 
-          boxShadow: "0 0 0 1px #F9FAFB",
         }),
-        placeholder: (base) => ({
-          ...base,
-          color: "hsl(var(--muted-foreground))",
-        }),
-        option: (styles) => ({
+        placeholder: ( styles ) => ({
           ...styles,
-          fontSize: "0.8rem",
-          paddingLeft: "1rem",
-          cursor: "pointer",
-          padding: "0.5rem",
+          color: 'hsl(var(-muted-foreground)'
+        }),
+        input: ( value ) => ({
+          ...value,
+            color: 'white'
+        }),
+        option: (styles , state) => ({
+          ...styles,
+          position: 'relative',
+          zIndex: '99999',
+          maxHeight: '96px',
+          minWidth: '8rem',
+          overflow: 'hidden',
+          border: '1px solid #yourBorderColor', 
+          backgroundColor:'hsl(var(--popover))', 
+          color: 'var(--text-popover-foreground)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', 
+          
+          ":hover" : {  
+            backgroundColor: '#6c6c6c',
+          },
         }),
         menu: (styles) => ({
           ...styles,
-          borderRadius: "5px",
-          borderColor: "#E5E7EB",
-          marginTop: ".5rem",
-          transition: "2s",
-          width: `${width}`
+          width: `${width}`,
+          position: 'absolute',
+          zIndex: 99999,
+          minWidth: '8rem',
+          overflow: 'hidden',
+          borderRadius: '0.375rem', /* Equivalente a rounded-md */
+          border: '1px solid #yourBorderColor', /* Substitua pela cor desejada */
+          backgroundColor: "#7474744e",// 'var(--background-color)',
+          color: 'var(--text-popover-foreground)', /* Substitua pela cor desejada */
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', /* Equivalente a shadow-md */
         }),
       }}
     />
@@ -96,7 +112,7 @@ export function SelectItemOtimizadoCustomizado({ options , placeholder , heigth 
   return (
     <Select
       options={options}
-      components={{ MenuList: MenuList , IndicatorSeparator: null}}
+      components={{ MenuList: MenuList , IndicatorSeparator: null }}
       placeholder={placeholder}
       value={ options.find((c: any) => c.value === value ) }
       onChange={ ( optionSelected ) => onChange(optionSelected?.value)}
@@ -104,45 +120,63 @@ export function SelectItemOtimizadoCustomizado({ options , placeholder , heigth 
       maxMenuHeight={heigth}
       menuPlacement="bottom"
       classNamePrefix="react-select"
+      menuShouldScrollIntoView={false}
+      
 
       styles={{
         control: () => ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-
           height: "2.5rem",
           width: `${width}`,
-
           borderRadius: "calc(var(--radius) - 2px)",
-          border: "1px solid #E5E7EB",
-
-          backgroundColor: "#fff",
-
+          borderWidth: "1px",
+          backgroundColor: 'hsl(var(--background-color))',
           padding: "0.25rem 0.1rem",
-
           fontSize: "0.875rem",
+        }),
 
-          boxShadow: "0 0 0 1px #F9FAFB",
+        singleValue: ( value) => ({
+          ...value,
+          color: 'hsl(var(-muted-foreground))',
         }),
-        placeholder: (base) => ({
-          ...base,
-          color: "hsl(var(--muted-foreground))",
+        input: ( value ) => ({
+          ...value,
+            color: 'white'
         }),
-        option: (styles) => ({
+        placeholder: ( styles ) => ({
           ...styles,
-          fontSize: "0.8rem",
-          paddingLeft: "1rem",
-          cursor: "pointer",
-          padding: "0.5rem",
+          color: 'hsl(var(-muted-foreground)'
+        }),      
+        option: (styles , state) => ({
+          ...styles,
+          position: 'relative',
+          zIndex: '99999',
+          maxHeight: '96px',
+          minWidth: '8rem',
+          overflow: 'hidden',
+          border: '1px solid #yourBorderColor', 
+          backgroundColor: 'hsl(var(--popover))', 
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', 
+          color: 'var(--text-popover-foreground)',
+
+          ":hover" : {  
+            backgroundColor: '#6c6c6c',
+          }
         }),
         menu: (styles) => ({
           ...styles,
-          borderRadius: "5px",
-          borderColor: "#E5E7EB",
-          marginTop: ".5rem",
-          transition: "2s",
-          width: `${width}`
+          width: `${width}`,
+          position: 'absolute',
+          zIndex: 99999,
+          minWidth: '8rem',
+          overflow: 'hidden',
+          borderRadius: '0.375rem', 
+          border: '1px solid #yourBorderColor', 
+          backgroundColor: "#7474744e",
+          color: 'var(--text-popover-foreground)', 
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         }),
       }}
     />
