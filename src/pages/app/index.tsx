@@ -7,21 +7,31 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios, { AxiosError } from "axios";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { Button } from "../../components/ui/button";
 
 export function Index(){
     
     const [ queryContract , setQueryContract ] = useState<string | number>('')
     const [ contracts , setContracts ] = useState([])
 
+    // Paginação
+    const [ totalPages , setTotalPages ] = useState(0)
+    const [ currencyPage , setCurrencyPage ] = useState(12)
+
     // Requisições API
     async function getContracts(){
         const contracts = await api.get('contratos',{
             params: {
-                query: queryContract
+                query: queryContract,
+                offset: ( currencyPage ) * 10
             }
         })
 
-        setContracts(contracts.data)
+        const contractsList = JSON.parse(contracts.data)
+        console.log(contractsList["paginationContracts"]["totalPages"])
+        setContracts(contractsList["listContratos"])
+        setTotalPages(contractsList["paginationContracts"]["totalPages"])
+
     }
 
     async function deleteContract(seq_contrato:number){
@@ -151,33 +161,17 @@ export function Index(){
 
     useEffect( () => {
         getContracts();
-    },[queryContract])
+    },[ queryContract , currencyPage ])
+
     return(
         <main className="p-2">
-
             <div className="pt-4 pb-2 flex flex-row gap-2">
                 <Input 
-                    placeholder="Filtre por um contrato ou cliente" 
+                    placeholder="Filtre por um cliente" 
                     className="w-[40%] focus:outline-none focus:shadow rounded flex-1"
                     value={queryContract}
                     onChange={( e ) => setQueryContract(e.target.value)}
                 />
-
-                <Select>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select a fruit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                        <SelectLabel>Fruits</SelectLabel>
-                        <SelectItem value="apple">Apple</SelectItem>
-                        <SelectItem value="banana">Banana</SelectItem>
-                        <SelectItem value="blueberry">Blueberry</SelectItem>
-                        <SelectItem value="grapes">Grapes</SelectItem>
-                        <SelectItem value="pineapple">Pineapple</SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
             </div>
 
             <Table className="border rounded-md">
@@ -205,6 +199,27 @@ export function Index(){
                         /> )}
                 </TableBody>
             </Table>
+
+            <div className="flex flex-row gap-1 mt-2 w-full justify-center">
+               <Button onClick={() => setCurrencyPage(0)}>Primeira</Button>
+                    { Array(totalPages).fill('').map((_, index  ) => {
+                        const indexPageCurrency = index + 1 
+                        return (
+                            <Button 
+                                className={ 
+                                    index === currencyPage ? "bg-red-600 hover:bg-red-600" :  
+                                    indexPageCurrency  > currencyPage + 2 || indexPageCurrency < currencyPage  ? "hidden" : ''
+                                } 
+                                onClick={() => setCurrencyPage( index )}  
+                                key={index}
+                            >
+                                    { indexPageCurrency}
+                            </Button>
+                        )
+                    })}
+               <Button onClick={() => setCurrencyPage(totalPages - 1)}>Ultima</Button>
+            </div>
+           
         </main>
     )
 }
