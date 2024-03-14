@@ -61,7 +61,7 @@ interface ProductsProps {
 export function UpdateContract() {
 
     // Hooks: useForm , useState 
-    const { register, control , handleSubmit , setValue , reset , formState: { errors } } = useForm<ContractType>({
+    const { register, control , handleSubmit , setValue , getValues , formState: { errors } } = useForm<ContractType>({
         resolver:  zodResolver(FormContractSchema),
         defaultValues: {
             client: 0,
@@ -166,7 +166,12 @@ export function UpdateContract() {
         const contractID = await api.get(`get-contract-id/${seq_contrato}`)
         
         const headerContract = contractID.data
-        console.log(headerContract["contract"])
+        // Preenchendo os valores do hook form
+        Object.entries( headerContract["contract"] ).forEach(([key , value]) => {
+            setValue(key, value)
+        })
+        
+        setTotalPriceContract(getValues("totalPriceContract")!)
         setShoppingCart(headerContract["contractDetails"])
     }
 

@@ -16,7 +16,7 @@ export function Index(){
 
     // Paginação
     const [ totalPages , setTotalPages ] = useState(0)
-    const [ currencyPage , setCurrencyPage ] = useState(12)
+    const [ currencyPage , setCurrencyPage ] = useState(0)
 
     // Requisições API
     async function getContracts(){
