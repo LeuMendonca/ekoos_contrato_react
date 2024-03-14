@@ -49,8 +49,9 @@ const FormContractSchema = z.object({
 
 type ContractType = z.infer<typeof FormContractSchema>
 
-interface ProductsProps {
+interface ProductsUpdateProps {
     id: number
+    seq_contrato_detalhe: number | null
     product: string | number
     descProduct: string
     unit: string 
@@ -71,10 +72,10 @@ export function UpdateContract() {
 
     const { seq_contrato } = useParams()
 
-    const [ products , setProducts ] = useState<ProductsProps[]>([])
+    const [ products , setProducts ] = useState<ProductsUpdateProps[]>([])
     const [ costumers , setCostumers ] = useState([])
 
-    const [ shoppingCart , setShoppingCart ] = useState<ProductsProps[]>([])
+    const [ shoppingCart , setShoppingCart ] = useState<ProductsUpdateProps[]>([])
 
     const [ id , setId ] = useState(1)
     const [ item , setItem ] = useState('0')
@@ -88,32 +89,32 @@ export function UpdateContract() {
     },[totalPriceContract])
 
     // Funções
-    async function handleSubmitContract(data:ContractType){
-        const responsePost = await api.post('new-contract',{
-            data:data,
-            listItems: shoppingCart,
-        })
+    async function handleSubmitUpdateContract(data:ContractType){
+        console.log(data)
+        
+        // const responseUpdate = await api.post(`update-contract/${seq_contrato}`,{
+        //     data:data,
+        //     // listItems: shoppingCart,
+        // })
 
 
-        console.log(responsePost.status)
-        if( responsePost.status == 200){
-            toast.success("Contrato cadastrado com sucesso!",{
-                autoClose: 1000
-            })
+        // console.log(responseUpdate.status)
+        // if( responseUpdate.status == 200){
+        //     toast.success("Contrato cadastrado com sucesso!",{
+        //         autoClose: 1000
+        //     })
 
-            setInterval(() => window.location.href = "/" , 2000)
-        }
+        //     setInterval(() => window.location.href = "/" , 2000)
+        // }
     }
-
 
     async function addProductToShoppingCart(){
 
         const descProduct = products.find( c => c.value == item && c)
 
-        console.log(item)
-
-        const objNewProduct:ProductsProps = {
+        const objNewProduct: ProductsUpdateProps = {
             id: id,
+            seq_contrato_detalhe: null,
             product: item,
             descProduct: descProduct['label'],
             unit: unit ,
@@ -138,9 +139,9 @@ export function UpdateContract() {
 
     function deleteItemShoppingCart( idProduct: number){
         const contractDeleted = shoppingCart.filter( value => value.id == idProduct)[0]
+        const calcDelete = +contractDeleted.amount * +contractDeleted.unitPrice
         
-        const recalculatingTotalContractValue = +contractDeleted["amount"] * +contractDeleted["unitPrice"]
-        setTotalPriceContract(recalculatingTotalContractValue)
+        setTotalPriceContract(state => state - calcDelete )
 
         setShoppingCart( shoppingCart.filter( value => value.id != idProduct ) )
     }
@@ -173,6 +174,8 @@ export function UpdateContract() {
         
         setTotalPriceContract(getValues("totalPriceContract")!)
         setShoppingCart(headerContract["contractDetails"])
+
+        setId(headerContract["contractDetails"].length + 1)
     }
 
     useEffect(() => {
@@ -182,7 +185,7 @@ export function UpdateContract() {
     },[])
 
     return (
-        <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitContract)}>
+        <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitUpdateContract)}>
             <div className="grid grid-cols-8 flex-row gap-3">
                 <div className="col-span-4 flex flex-col gap-2">
                     <h1 className="text-3xl font-medium mb-6">Atualização Contrato {seq_contrato}</h1>
@@ -364,22 +367,24 @@ export function UpdateContract() {
                                         </TableHeader>
 
                                         <TableBody>
-                                        { shoppingCart.map( item => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className=" text-center">{ item.product }</TableCell>
-                                                <TableCell className=" text-center">{ item.descProduct }</TableCell>
-                                                <TableCell className=" text-center">{ item.amount }</TableCell>
-                                                <TableCell className=" text-center">{ item.unit }</TableCell>
-                                                <TableCell className=" text-center">{ (+item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
-                                                <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
-                                                <TableCell className=" text-center">
-                                                        <Trash2 
-                                                            className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
-                                                            onClick={() => deleteItemShoppingCart(item.id)}
-                                                        />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        { shoppingCart.map( ( item ) => {
+                                            return (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className=" text-center">{ item.product }</TableCell>
+                                                    <TableCell className=" text-center">{ item.descProduct }</TableCell>
+                                                    <TableCell className=" text-center">{ item.amount }</TableCell>
+                                                    <TableCell className=" text-center">{ item.unit }</TableCell>
+                                                    <TableCell className=" text-center">{ (+item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
+                                                    <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
+                                                    <TableCell className=" text-center">
+                                                            <Trash2 
+                                                                className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
+                                                                onClick={() => deleteItemShoppingCart(item.id)}
+                                                            />
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                         </TableBody>
 
                                         <TableFooter>
@@ -403,7 +408,7 @@ export function UpdateContract() {
             <div className="ml-auto">
                     <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto">Limpar</Button>
 
-                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={shoppingCart.length == 0}>Gerar contrato</Button>
+                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={shoppingCart.length == 0}>Atualizar Contrato</Button>
             </div>
         </form >
     )

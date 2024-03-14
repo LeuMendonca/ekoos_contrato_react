@@ -1,7 +1,7 @@
 import { Button } from "../../../components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu";
 import { TableCell, TableRow } from "../../../components/ui/table";
-import { api } from "../../../services/Axios";
+import { NavLink } from "react-router-dom";
 
 interface ContractProps {
     seq_contrato: number
@@ -38,7 +38,7 @@ export function ContractTableRow( { contract , deleteContract , closeContract , 
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent>
-                            <DropdownMenuItem>Atualizar</DropdownMenuItem>
+                            <DropdownMenuItem><NavLink to={`update/${contract.seq_contrato}`}>Atualizar</NavLink></DropdownMenuItem>
                             <DropdownMenuItem onClick={() => closeContract(contract.seq_contrato)}>Concluir</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => deleteContract(contract.seq_contrato)}>Excluir</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => printContract(contract.seq_contrato)}>Imprimir</DropdownMenuItem>
