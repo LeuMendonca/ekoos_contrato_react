@@ -13,12 +13,13 @@ import { SelectItemOtimizadoCustomizado, SelectOtimizadoCustomizado } from "../.
 import { api } from "../../../services/Axios"
 import { Card } from "../../../components/ui/card"
 import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow } from "../../../components/ui/table"
-import { Frown, Trash2 } from "lucide-react"
+import { Frown, Pencil, SquarePen, Trash2 } from "lucide-react"
 
 import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { contractVariables, franchise, hours, units } from "../register/Utilities/Utilities"
 import { useParams } from "react-router-dom"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -51,9 +52,9 @@ type ContractType = z.infer<typeof FormContractSchema>
 
 interface ProductsUpdateProps {
     id: number
-    seq_contrato_detalhe: number | null
+    seq_contrato_detalhe: number 
     product: string | number
-    descProduct: string
+    descProduct: string | undefined
     unit: string 
     amount: number
     unitPrice: number
@@ -90,11 +91,21 @@ export function UpdateContract() {
 
     // Funções
     async function handleSubmitUpdateContract(data:ContractType){
-        console.log(data)
-        
+        console.log(shoppingCart)
         try {
-            const response = await api.put(`update-contract/${seq_contrato}`, data)
-            console.log(response.status)
+            const responsePutUpdate = await api.put(`update-contract/${seq_contrato}`,  {
+                data: data ,
+                itens: shoppingCart
+            })
+
+            if( responsePutUpdate.status == 200){
+                toast.success(responsePutUpdate.data.message,{
+                    autoClose: 1000
+                })
+    
+                setInterval(() => window.location.href = "/" , 2000)
+            }
+            
         } catch (error) {
             console.error('Erro ao atualizar contrato:', error);
         }
@@ -106,7 +117,7 @@ export function UpdateContract() {
 
         const objNewProduct: ProductsUpdateProps = {
             id: id,
-            seq_contrato_detalhe: null,
+            seq_contrato_detalhe: 0,
             product: item,
             descProduct: descProduct['label'],
             unit: unit ,
@@ -318,13 +329,13 @@ export function UpdateContract() {
                 
                 <div>
                 <span className="text-md font-medium">Quantidade</span>
-                    <Input type="number" className="w-[170px]" placeholder="Ex: 10" value={amount!} onChange={( e ) => setAmount( e.target.value )}/>
+                    <Input type="number" className="w-[170px]" placeholder="Ex: 10" value={amount!} onChange={( e ) => setAmount( +e.target.value )}/>
                     { amount < 1 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span> }
                 </div>
 
                 <div>
                     <span className="text-md font-medium">Valor unitario</span>
-                    <Input type="number" className="w-[170px]" placeholder="Ex: 3.65" value={unitPrice!} onChange={(e) => setUnitPrice(e.target.value)}/>
+                    <Input type="number" className="w-[170px]" placeholder="Ex: 3.65" value={unitPrice!} onChange={(e) => setUnitPrice(+e.target.value)}/>
                     { unitPrice <= 0 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 0.01</span> }
                 </div>
 
@@ -362,13 +373,34 @@ export function UpdateContract() {
                                         { shoppingCart.map( ( item ) => {
                                             return (
                                                 <TableRow key={item.id}>
-                                                    <TableCell className=" text-center">{ item.product }</TableCell>
-                                                    <TableCell className=" text-center">{ item.descProduct }</TableCell>
-                                                    <TableCell className=" text-center">{ item.amount }</TableCell>
-                                                    <TableCell className=" text-center">{ item.unit }</TableCell>
-                                                    <TableCell className=" text-center">{ (+item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
-                                                    <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
                                                     <TableCell className=" text-center">
+                                                        <Input className="border-none bg-transparent" 
+                                                            value={ item.product }/>
+                                                    </TableCell>
+
+                                                    <TableCell className=" text-center">
+                                                        <Input className="border-none bg-transparent" value={ item.descProduct }/>
+                                                    </TableCell>
+
+                                                    <TableCell className=" text-center">
+                                                        <Input className="border-none bg-transparent" value={ item.amount }/>
+                                                    </TableCell>
+                                                    
+                                                    <TableCell className=" text-center">
+                                                        <Input className="border-none bg-transparent" value={ item.unit }/>
+                                                    </TableCell>
+                                                    
+                                                    <TableCell className=" text-center">
+                                                        <Input 
+                                                            className="border-none bg-transparent"
+                                                            value={ (+item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }
+                                                        />
+                                                    </TableCell>
+
+                                                    <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
+                                                    <TableCell className=" text-center flex gap-2">
+                                                            <SquarePen className="w-5 h-5 cursor-pointer"/>
+                                                            
                                                             <Trash2 
                                                                 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
                                                                 onClick={() => deleteItemShoppingCart(item.id)}

@@ -207,7 +207,7 @@ export function Index(){
                         return (
                             <Button 
                                 className={ 
-                                    index === currencyPage ? "bg-red-600 hover:bg-red-600" :  
+                                    index === currencyPage ? "bg-zinc-600 hover:bg-zinc-600" :  
                                     indexPageCurrency  > currencyPage + 2 || indexPageCurrency < currencyPage  ? "hidden" : ''
                                 } 
                                 onClick={() => setCurrencyPage( index )}  
