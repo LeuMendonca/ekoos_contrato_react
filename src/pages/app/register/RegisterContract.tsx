@@ -42,7 +42,7 @@ const FormContractSchema = z.object({
     chvTransManual: z.boolean().default(false).optional(),
     combustivel: z.boolean().default(false).optional(),
     instalacao: z.boolean().default(false).optional(),
-    manutencaoPeriodicaa: z.boolean().default(false).optional(),
+    manutencaoPeriodica: z.boolean().default(false).optional(),
     transporte: z.boolean().default(false).optional(),
 });
 
@@ -92,7 +92,7 @@ export function RegisterContract() {
         })
 
 
-        console.log(responsePost.status)
+        console.log(responsePost.data)
         if( responsePost.status == 200){
             toast.success("Contrato cadastrado com sucesso!",{
                 autoClose: 1000

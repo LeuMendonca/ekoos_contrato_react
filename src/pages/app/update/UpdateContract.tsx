@@ -43,7 +43,7 @@ const FormContractSchema = z.object({
     chvTransManual: z.boolean().default(false).optional(),
     combustivel: z.boolean().default(false).optional(),
     instalacao: z.boolean().default(false).optional(),
-    manutencaoPeriodicaa: z.boolean().default(false).optional(),
+    manutencaoPeriodica: z.boolean().default(false).optional(),
     transporte: z.boolean().default(false).optional(),
 });
 
@@ -92,20 +92,12 @@ export function UpdateContract() {
     async function handleSubmitUpdateContract(data:ContractType){
         console.log(data)
         
-        // const responseUpdate = await api.post(`update-contract/${seq_contrato}`,{
-        //     data:data,
-        //     // listItems: shoppingCart,
-        // })
-
-
-        // console.log(responseUpdate.status)
-        // if( responseUpdate.status == 200){
-        //     toast.success("Contrato cadastrado com sucesso!",{
-        //         autoClose: 1000
-        //     })
-
-        //     setInterval(() => window.location.href = "/" , 2000)
-        // }
+        try {
+            const response = await api.put(`update-contract/${seq_contrato}`, data)
+            console.log(response.status)
+        } catch (error) {
+            console.error('Erro ao atualizar contrato:', error);
+        }
     }
 
     async function addProductToShoppingCart(){

@@ -4,7 +4,7 @@ export const contractVariables = [
     {id: 'chvTransManual' , label: "Chave de transferência manual"},
     {id: 'combustivel' , label: "Combustível" },
     {id: 'instalacao' , label: "Instalação"},
-    {id: 'manutencaoPeriodicaa' , label: "Manutenção periódica" },
+    {id: 'manutencaoPeriodica' , label: "Manutenção periódica" },
     {id: 'transporte' , label:"Transporte"}
 ]
 
