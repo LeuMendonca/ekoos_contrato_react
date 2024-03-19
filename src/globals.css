@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    --color-select: "#FFF";
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -29,6 +30,7 @@
   }
 
   .dark {
+    --color-select: "#000";
     --background: 20 14.3% 4.1%;
     --foreground: 0 0% 95%;
     --card: 24 9.8% 10%;

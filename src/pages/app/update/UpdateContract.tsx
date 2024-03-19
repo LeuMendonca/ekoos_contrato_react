@@ -9,17 +9,16 @@ import { Label } from "../../../components/ui/label"
 import { Separator } from "../../../components/ui/separator"
 import { Button } from "../../../components/ui/button"
 
-import { SelectItemOtimizadoCustomizado, SelectOtimizadoCustomizado } from "../../../components/otimizacaoSelect/selectOtimizadoCustomizado"
+import { SelectItemOtimizadoCustomizado, SelectItemUpdateOtimizadoCustomizado, SelectOtimizadoCustomizado } from "../../../components/otimizacaoSelect/selectOtimizadoCustomizado"
 import { api } from "../../../services/Axios"
 import { Card } from "../../../components/ui/card"
 import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow } from "../../../components/ui/table"
-import { Frown, Pencil, SquarePen, Trash2 } from "lucide-react"
+import { Frown, SquarePen, Trash2 } from "lucide-react"
 
 import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { contractVariables, franchise, hours, units } from "../register/Utilities/Utilities"
 import { useParams } from "react-router-dom"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../../components/ui/dialog"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -155,6 +154,17 @@ export function UpdateContract() {
         }
     }
 
+    function handleAlterInfo( valueInput:string | number, id:number ,campo:string ){
+        console.log("entrei")
+        console.log(campo)
+        setShoppingCart(shoppingCart.map(value => {
+            if (value.id === id) {
+                return { ...value, [campo]: valueInput };
+            }
+            return value;
+        }));
+    }
+
     // Requisições API
     async function getCostumers(){
         const costumers = await api.get('clientes')
@@ -187,8 +197,10 @@ export function UpdateContract() {
         getContractID();
     },[])
 
+    // console.log(shoppingCart)
     return (
         <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitUpdateContract)}>
+            
             <div className="grid grid-cols-8 flex-row gap-3">
                 <div className="col-span-4 flex flex-col gap-2">
                     <h1 className="text-3xl font-medium mb-6">Atualização Contrato {seq_contrato}</h1>
@@ -374,31 +386,54 @@ export function UpdateContract() {
                                             return (
                                                 <TableRow key={item.id}>
                                                     <TableCell className=" text-center">
-                                                        <Input className="border-none bg-transparent" 
-                                                            value={ item.product }/>
+                                                        { item.product }
+                                                    </TableCell>
+
+                                                    <TableCell className=" text-start">
+                                                        {/* { item.descProduct } */}
+                                                        <SelectItemUpdateOtimizadoCustomizado
+                                                            placeholder={"Selecione um produto"}
+                                                            options={products}
+                                                            width={"100%"}
+                                                            heigth={250}
+                                                            value={ item.product.toString() }
+                                                            onChange={handleAlterInfo}
+                                                            idItem={item.id}
+                                                            inputName={"product"}
+                                                        />
                                                     </TableCell>
 
                                                     <TableCell className=" text-center">
-                                                        <Input className="border-none bg-transparent" value={ item.descProduct }/>
-                                                    </TableCell>
-
-                                                    <TableCell className=" text-center">
-                                                        <Input className="border-none bg-transparent" value={ item.amount }/>
+                                                        <Input 
+                                                            value={ item.amount } 
+                                                            className="text-center bg-transparent w-full"
+                                                            onChange={ ( e ) => handleAlterInfo(e.target.value , item.id , "amount")}
+                                                        />
                                                     </TableCell>
                                                     
                                                     <TableCell className=" text-center">
-                                                        <Input className="border-none bg-transparent" value={ item.unit }/>
+                                                        <SelectItemUpdateOtimizadoCustomizado
+                                                            options={units}
+                                                            placeholder="Ex: Dias,Semanas"
+                                                            width="200px"
+                                                            heigth={245}
+                                                            value={ item.unit }
+                                                            onChange={handleAlterInfo}
+                                                            idItem={item.id}
+                                                            inputName={"unit"}
+                                                        />
                                                     </TableCell>
                                                     
                                                     <TableCell className=" text-center">
                                                         <Input 
-                                                            className="border-none bg-transparent"
-                                                            value={ (+item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }
+                                                            value={ (+item.unitPrice) } className="text-center bg-transparent w-full"
+                                                            onChange={ ( e ) => handleAlterInfo(e.target.value , item.id , "unitPrice")}
                                                         />
+                                                        
                                                     </TableCell>
 
                                                     <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
-                                                    <TableCell className=" text-center flex gap-2">
+                                                    <TableCell className="flex items-center justify-center gap-2 text-center">
                                                             <SquarePen className="w-5 h-5 cursor-pointer"/>
                                                             
                                                             <Trash2 

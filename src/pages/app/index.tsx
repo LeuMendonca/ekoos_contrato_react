@@ -6,7 +6,6 @@ import { Input } from "../../components/ui/input";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios, { AxiosError } from "axios";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { Button } from "../../components/ui/button";
 
 export function Index(){
