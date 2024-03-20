@@ -82,32 +82,36 @@ export function UpdateContract() {
     const [ unit , setUnit ] = useState('')
     const [ amount , setAmount ] = useState(0)
     const [ unitPrice , setUnitPrice ] = useState(0)
-    const [ totalPriceContract , setTotalPriceContract ] = useState(0)
+    // const [ totalPriceContract , setTotalPriceContract ] = useState(0)
+    const totalPriceContract = shoppingCart.reduce( ( acc , item ) => {
+        return acc + ( item.amount * item.unitPrice)
+    },0)
 
-    useEffect(() =>{
-        setValue('totalPriceContract' , totalPriceContract)
-    },[totalPriceContract])
+
+    // useEffect(() =>{
+    //     setValue('totalPriceContract' , totalPriceContract)
+    // },[totalPriceContract])
 
     // Funções
     async function handleSubmitUpdateContract(data:ContractType){
-        console.log(shoppingCart)
-        try {
-            const responsePutUpdate = await api.put(`update-contract/${seq_contrato}`,  {
-                data: data ,
-                itens: shoppingCart
-            })
+        console.log(data)
+        // try {
+        //     const responsePutUpdate = await api.put(`update-contract/${seq_contrato}`,  {
+        //         data: data ,
+        //         itens: shoppingCart
+        //     })
 
-            if( responsePutUpdate.status == 200){
-                toast.success(responsePutUpdate.data.message,{
-                    autoClose: 1000
-                })
+        //     if( responsePutUpdate.status == 200){
+        //         toast.success(responsePutUpdate.data.message,{
+        //             autoClose: 1000
+        //         })
     
-                setInterval(() => window.location.href = "/" , 2000)
-            }
+        //         setInterval(() => window.location.href = "/" , 2000)
+        //     }
             
-        } catch (error) {
-            console.error('Erro ao atualizar contrato:', error);
-        }
+        // } catch (error) {
+        //     console.error('Erro ao atualizar contrato:', error);
+        // }
     }
 
     async function addProductToShoppingCart(){
@@ -132,7 +136,7 @@ export function UpdateContract() {
         setUnit('')
         setAmount(0)
         setUnitPrice(0)
-        setTotalPriceContract(state => state + ( +unitPrice * +amount ) )
+        // setTotalPriceContract(state => state + ( +unitPrice * +amount ) )
 
         toast.success("Produto adicionado com sucesso!",{
             autoClose: 2500
@@ -143,7 +147,7 @@ export function UpdateContract() {
         const contractDeleted = shoppingCart.filter( value => value.id == idProduct)[0]
         const calcDelete = +contractDeleted.amount * +contractDeleted.unitPrice
         
-        setTotalPriceContract(state => state - calcDelete )
+        // setTotalPriceContract(state => state - calcDelete )
 
         setShoppingCart( shoppingCart.filter( value => value.id != idProduct ) )
     }
@@ -154,9 +158,8 @@ export function UpdateContract() {
         }
     }
 
-    function handleAlterInfo( valueInput:string | number, id:number ,campo:string ){
-        console.log("entrei")
-        console.log(campo)
+    async function handleAlterInfo( valueInput:string | number, id:number ,campo:string ){
+        console.log(valueInput)
         setShoppingCart(shoppingCart.map(value => {
             if (value.id === id) {
                 return { ...value, [campo]: valueInput };
@@ -185,7 +188,7 @@ export function UpdateContract() {
             setValue(key, value)
         })
         
-        setTotalPriceContract(getValues("totalPriceContract")!)
+        // setTotalPriceContract(getValues("totalPriceContract")!)
         setShoppingCart(headerContract["contractDetails"])
 
         setId(headerContract["contractDetails"].length + 1)
@@ -427,12 +430,13 @@ export function UpdateContract() {
                                                     <TableCell className=" text-center">
                                                         <Input 
                                                             value={ (+item.unitPrice) } className="text-center bg-transparent w-full"
-                                                            onChange={ ( e ) => handleAlterInfo(e.target.value , item.id , "unitPrice")}
+                                                            onChange ={ ( e ) => handleAlterInfo(e.target.value , item.id , "unitPrice")}
                                                         />
                                                         
                                                     </TableCell>
+                                                    
+                                                    <TableCell className=" text-center">{item.amount * item.unitPrice}</TableCell>
 
-                                                    <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
                                                     <TableCell className="flex items-center justify-center gap-2 text-center">
                                                             <SquarePen className="w-5 h-5 cursor-pointer"/>
                                                             
