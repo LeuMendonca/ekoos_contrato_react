@@ -3,7 +3,7 @@ import { Index } from "../pages/app";
 import { LayoutApp } from "../layouts/app/app";
 import { RegisterContract } from "../pages/app/register/RegisterContract";
 import { UpdateContract } from "../pages/app/update/UpdateContract";
-import { api } from "../services/Axios";
+import { Login } from "../pages/app/login/Login.tsx";
 
 export const Router = createBrowserRouter([
     { 
@@ -11,7 +11,7 @@ export const Router = createBrowserRouter([
         element: <LayoutApp/>,
         children: [
             { 
-                path: '/',
+                path: '/index',
                 element: <Index/>,
             },
             {
@@ -24,5 +24,8 @@ export const Router = createBrowserRouter([
             }
         ]
     },
-    
+    { 
+        path: '/login',
+        element: <Login/>,
+    },
 ])

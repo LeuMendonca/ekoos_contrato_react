@@ -19,6 +19,7 @@ import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { contractVariables, franchise, hours, units } from "../register/Utilities/Utilities"
 import { useParams } from "react-router-dom"
+import axios, { AxiosError } from "axios"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -82,36 +83,45 @@ export function UpdateContract() {
     const [ unit , setUnit ] = useState('')
     const [ amount , setAmount ] = useState(0)
     const [ unitPrice , setUnitPrice ] = useState(0)
-    // const [ totalPriceContract , setTotalPriceContract ] = useState(0)
+
     const totalPriceContract = shoppingCart.reduce( ( acc , item ) => {
         return acc + ( item.amount * item.unitPrice)
     },0)
 
-
-    // useEffect(() =>{
-    //     setValue('totalPriceContract' , totalPriceContract)
-    // },[totalPriceContract])
+    useEffect(() => {
+        setValue("totalPriceContract",totalPriceContract)
+    },[totalPriceContract])
 
     // Funções
     async function handleSubmitUpdateContract(data:ContractType){
-        console.log(data)
-        // try {
-        //     const responsePutUpdate = await api.put(`update-contract/${seq_contrato}`,  {
-        //         data: data ,
-        //         itens: shoppingCart
-        //     })
+        try {
+            const responsePutUpdate = await api.put(`update-contract/${seq_contrato}`,  {
+                data: data ,
+                itens: shoppingCart
+            })
 
-        //     if( responsePutUpdate.status == 200){
-        //         toast.success(responsePutUpdate.data.message,{
-        //             autoClose: 1000
-        //         })
+            if( responsePutUpdate.status == 200){
+                toast.success(responsePutUpdate.data.message,{
+                    autoClose: 1000
+                })
     
-        //         setInterval(() => window.location.href = "/" , 2000)
-        //     }
+                setInterval(() => window.location.href = "/" , 2000)
+            }
             
-        // } catch (error) {
-        //     console.error('Erro ao atualizar contrato:', error);
-        // }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                const axiosError = error as AxiosError;
+
+                const mensageError = axiosError.response.data.message
+
+                toast.error(`${mensageError}`, {
+                    autoClose: 2000
+                });
+            } else {
+                // É outro tipo de erro
+                console.error('Erro:', error.message);
+            }
+        }
     }
 
     async function addProductToShoppingCart(){
@@ -136,7 +146,6 @@ export function UpdateContract() {
         setUnit('')
         setAmount(0)
         setUnitPrice(0)
-        // setTotalPriceContract(state => state + ( +unitPrice * +amount ) )
 
         toast.success("Produto adicionado com sucesso!",{
             autoClose: 2500
@@ -144,11 +153,6 @@ export function UpdateContract() {
     }
 
     function deleteItemShoppingCart( idProduct: number){
-        const contractDeleted = shoppingCart.filter( value => value.id == idProduct)[0]
-        const calcDelete = +contractDeleted.amount * +contractDeleted.unitPrice
-        
-        // setTotalPriceContract(state => state - calcDelete )
-
         setShoppingCart( shoppingCart.filter( value => value.id != idProduct ) )
     }
 
@@ -185,10 +189,11 @@ export function UpdateContract() {
         const headerContract = contractID.data
         // Preenchendo os valores do hook form
         Object.entries( headerContract["contract"] ).forEach(([key , value]) => {
-            setValue(key, value)
+            if ( key != "totalPriceContract"){
+                setValue(key, value)
+            }
         })
         
-        // setTotalPriceContract(getValues("totalPriceContract")!)
         setShoppingCart(headerContract["contractDetails"])
 
         setId(headerContract["contractDetails"].length + 1)
@@ -200,7 +205,6 @@ export function UpdateContract() {
         getContractID();
     },[])
 
-    // console.log(shoppingCart)
     return (
         <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitUpdateContract)}>
             
@@ -272,12 +276,12 @@ export function UpdateContract() {
 
                     <div className="flex gap-2 grid-span-4">
                         <div>
-                            <Input type="date" className="w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
+                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
                             {errors.initialDate &&<span className="text-sm text-rose-500 pl-1">{errors.initialDate.message}</span>}
                         </div>
 
                         <div>
-                            <Input type="date" className="w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
+                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
                             {errors.finalDate &&<span className="text-sm text-rose-500 pl-1">{errors.finalDate.message}</span>}
                         </div>
                     </div>
@@ -387,12 +391,14 @@ export function UpdateContract() {
                                         <TableBody>
                                         { shoppingCart.map( ( item ) => {
                                             return (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className=" text-center">
-                                                        { item.product }
+                                                <TableRow key={item.id} className="h-[4.37rem]">
+                                                    <TableCell className="text-center">
+                                                        <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                                                            { item.product }
+                                                        </Card>
                                                     </TableCell>
 
-                                                    <TableCell className=" text-start">
+                                                    <TableCell className="text-start">
                                                         {/* { item.descProduct } */}
                                                         <SelectItemUpdateOtimizadoCustomizado
                                                             placeholder={"Selecione um produto"}
@@ -406,7 +412,7 @@ export function UpdateContract() {
                                                         />
                                                     </TableCell>
 
-                                                    <TableCell className=" text-center">
+                                                    <TableCell className="text-center">
                                                         <Input 
                                                             value={ item.amount } 
                                                             className="text-center bg-transparent w-full"
@@ -414,7 +420,7 @@ export function UpdateContract() {
                                                         />
                                                     </TableCell>
                                                     
-                                                    <TableCell className=" text-center">
+                                                    <TableCell className="text-start">
                                                         <SelectItemUpdateOtimizadoCustomizado
                                                             options={units}
                                                             placeholder="Ex: Dias,Semanas"
@@ -435,14 +441,18 @@ export function UpdateContract() {
                                                         
                                                     </TableCell>
                                                     
-                                                    <TableCell className=" text-center">{item.amount * item.unitPrice}</TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                                                            {
+                                                                (item.amount * item.unitPrice).toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'})
+                                                            }
+                                                        </Card>
+                                                    </TableCell>
 
                                                     <TableCell className="flex items-center justify-center gap-2 text-center">
-                                                            <SquarePen className="w-5 h-5 cursor-pointer"/>
-                                                            
                                                             <Trash2 
                                                                 className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
-                                                                onClick={() => deleteItemShoppingCart(item.id)}
+                                                                onClick={ () => deleteItemShoppingCart(item.id) }
                                                             />
                                                     </TableCell>
                                                 </TableRow>
@@ -452,8 +462,11 @@ export function UpdateContract() {
 
                                         <TableFooter>
                                             <TableRow>
-                                            <TableCell colSpan={4}></TableCell>
-                                            <TableCell colSpan={3} className="text-end">Valor total do contrato: {totalPriceContract.toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'})}</TableCell>
+                                                <TableCell colSpan={4}></TableCell>
+                                            
+                                                <TableCell colSpan={3} className="text-end">
+                                                    Valor total do contrato: { totalPriceContract.toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'}) }
+                                                </TableCell>
                                             </TableRow>
                                         </TableFooter>
                                     </Table>

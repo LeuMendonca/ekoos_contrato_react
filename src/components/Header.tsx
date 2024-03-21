@@ -17,7 +17,7 @@ export function Header(){
             <Separator orientation="vertical" className="h-8"/>
 
             <nav className="flex flex-row">
-                <Link to={'/'} className="flex flex-col items-center :text-emerald-500">
+                <Link to={'/'} className="flex flex-col items-center cursor-pointer hover:text-blue-600">
                     <Home />
                     Home
                 </Link>

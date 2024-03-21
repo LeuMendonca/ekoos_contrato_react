@@ -18,6 +18,7 @@ import { contractVariables, franchise, hours, units } from "./Utilities/Utilitie
 
 import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios, { AxiosError } from "axios"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -44,7 +45,7 @@ const FormContractSchema = z.object({
     instalacao: z.boolean().default(false).optional(),
     manutencaoPeriodica: z.boolean().default(false).optional(),
     transporte: z.boolean().default(false).optional(),
-});
+})
 
 type ContractType = z.infer<typeof FormContractSchema>
 
@@ -86,19 +87,34 @@ export function RegisterContract() {
 
     // Funções
     async function handleSubmitContract(data:ContractType){
-        const responsePost = await api.post('new-contract',{
-            data:data,
-            listItems: shoppingCart,
-        })
-
-
-        console.log(responsePost.data)
-        if( responsePost.status == 200){
-            toast.success("Contrato cadastrado com sucesso!",{
-                autoClose: 1000
+        try{
+            const responsePost = await api.post('new-contract',{
+                data:data,
+                listItems: shoppingCart,
             })
 
-            setInterval(() => window.location.href = "/" , 2000)
+
+        
+            if( responsePost.status == 200){
+                toast.success(`${responsePost.data.message}`,{
+                    autoClose: 1000
+                })
+
+                setInterval(() => window.location.href = "/" , 2000)
+            }
+        }catch(error){
+            if (axios.isAxiosError(error)) {
+                const axiosError = error as AxiosError;
+
+                const mensageError = axiosError.response.data.message
+
+                toast.error(`${mensageError}`, {
+                    autoClose: 2000
+                });
+            } else {
+                // É outro tipo de erro
+                console.error('Erro:', error.message);
+            }
         }
     }
 
@@ -236,12 +252,12 @@ export function RegisterContract() {
 
                     <div className="flex gap-2 grid-span-4">
                         <div>
-                            <Input type="date" className="w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
+                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
                             {errors.initialDate &&<span className="text-sm text-rose-500 pl-1">{errors.initialDate.message}</span>}
                         </div>
 
                         <div>
-                            <Input type="date" className="w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
+                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
                             {errors.finalDate &&<span className="text-sm text-rose-500 pl-1">{errors.finalDate.message}</span>}
                         </div>
                     </div>
