@@ -3,17 +3,20 @@ import { Router } from "./routes/routes"
 import './globals.css'
 import { ThemeProvider } from "./components/themes/theme-provider"
 import { ToastContainer } from 'react-toastify'
+import { UseAuthentication } from "./context/useAuth"
+
 
 function App() {
 
   return (
     <>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <RouterProvider router={Router}/>
+    <UseAuthentication>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <RouterProvider router={Router}/>
 
-        <ToastContainer/>
-      </ThemeProvider>
-      
+          <ToastContainer/>
+        </ThemeProvider>
+    </UseAuthentication>
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -20,6 +20,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { contractVariables, franchise, hours, units } from "../register/Utilities/Utilities"
 import { useParams } from "react-router-dom"
 import axios, { AxiosError } from "axios"
+import { useAuth } from "../../../context/useAuth"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -71,6 +72,8 @@ export function UpdateContract() {
         }
     })
 
+    const { user } = useContext(useAuth)
+
     const { seq_contrato } = useParams()
 
     const [ products , setProducts ] = useState<ProductsUpdateProps[]>([])
@@ -105,7 +108,7 @@ export function UpdateContract() {
                     autoClose: 1000
                 })
     
-                setInterval(() => window.location.href = "/" , 2000)
+                setInterval(() => window.location.href = "/index" , 2000)
             }
             
         } catch (error) {
@@ -206,286 +209,289 @@ export function UpdateContract() {
     },[])
 
     return (
+        <> {user &&
         <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitUpdateContract)}>
-            
-            <div className="grid grid-cols-8 flex-row gap-3">
-                <div className="col-span-4 flex flex-col gap-2">
-                    <h1 className="text-3xl font-medium mb-6">Atualização Contrato {seq_contrato}</h1>
+           
+                <div className="grid grid-cols-8 flex-row gap-3">
+                    <div className="col-span-4 flex flex-col gap-2">
+                        <h1 className="text-3xl font-medium mb-6">Atualização Contrato {seq_contrato}</h1>
+
+                        <div>
+                        <Controller
+                                control={control}
+                                name="client"
+                                render={({field}) =>{
+                                    return(
+                                        <SelectOtimizadoCustomizado 
+                                            placeholder={"Selecione o cliente"}
+                                            options={costumers}
+                                            field={field}
+                                            width={"608px"}
+                                        />
+                                    )}}
+                            />
+                            {errors.client &&
+                                <span className="text-sm text-rose-500 pl-1">{errors.client.message}</span>
+                            }
+                        </div>
+
+                        <div className="flex gap-2 grid-span-4">
+                            <div>
+                                <Controller
+                                    name="franchise"
+                                    control={control}
+                                    render={({ field }) => {
+                                        return (
+                                            <SelectOtimizadoCustomizado 
+                                                placeholder={"Selecione a franquia"}
+                                                options={franchise}
+                                                field={field}
+                                                width={"300px"}
+                                                heigth={150}
+                                            />
+                                        )
+                                    }}
+                                />
+
+                            {errors.franchise &&
+                                <span className="text-sm text-rose-500 pl-1">{errors.franchise.message}</span>
+                            }
+                            </div>
+
+                            <div>
+                                <Controller
+                                    name="hours"
+                                    control={control}
+                                    render={({ field }) => {
+                                        return (
+                                            <SelectOtimizadoCustomizado 
+                                                placeholder={"Selecione as horas"}
+                                                options={hours}
+                                                field={field}
+                                                width={"300px"}
+                                                heigth={150}
+                                            />
+                                        )
+                                    }}
+                                />
+                                {errors.hours &&<span className="text-sm text-rose-500 pl-1">{errors.hours.message}</span>}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 grid-span-4">
+                            <div>
+                                <Input type="date" className="block w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
+                                {errors.initialDate &&<span className="text-sm text-rose-500 pl-1">{errors.initialDate.message}</span>}
+                            </div>
+
+                            <div>
+                                <Input type="date" className="block w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
+                                {errors.finalDate &&<span className="text-sm text-rose-500 pl-1">{errors.finalDate.message}</span>}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <Separator orientation="vertical" className="h-full relative left-10" />
+
+                    <div className="flex flex-col items-start justify-start gap-1 col-span-3 ">
+                        <h1 className="text-3xl font-medium mb-6">Variaveis do Contrato</h1>
+                        {contractVariables.map(variable => (
+                                <Controller
+                                    control={control}
+                                    name={variable.id}
+                                    render={({field}) => {
+                                        return(
+                                            <span className="flex gap-1">
+                                                <Checkbox 
+                                                    className="rounded-[3px] mb-1" 
+                                                    checked={field.value} 
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                                <Label>{variable.label}</Label>
+                                                
+                                            </span>
+                                        )
+                                    }}
+                                />
+                        ))}
+                    </div>
+                </div>
+
+                <Separator orientation="horizontal" className="my-[3rem]"/>
+                
+                <div className="flex flex-row gap-1 items-start">
+                    
+                    <div className="flex-1">
+                        <span className="text-md font-medium">Produto</span>
+                    
+                        <SelectItemOtimizadoCustomizado
+                            placeholder={"Selecione um produto"}
+                            options={products}
+                            width={"100%"}
+                            heigth={245}
+                            value={item}
+                            onChange={setItem}
+                        />
+                        {item == '0' && <span className="text-sm text-rose-500 pl-1">Selecione no mínimo um produto</span> }
+                    </div>
 
                     <div>
-                    <Controller
-                            control={control}
-                            name="client"
-                            render={({field}) =>{
-                                return(
-                                    <SelectOtimizadoCustomizado 
-                                        placeholder={"Selecione o cliente"}
-                                        options={costumers}
-                                        field={field}
-                                        width={"608px"}
-                                    />
-                                )}}
+                        <span className="text-md font-medium">Unidades</span>
+                        
+                        <SelectItemOtimizadoCustomizado
+                            options={units}
+                            placeholder="Ex: Dias,Semanas"
+                            width="200px"
+                            heigth={245}
+                            value={unit}
+                            onChange={setUnit}
                         />
-                        {errors.client &&
-                            <span className="text-sm text-rose-500 pl-1">{errors.client.message}</span>
-                        }
+                        { !unit && <span className="text-sm text-rose-500 pl-1">Selecione uma unidade</span> }
                     </div>
-
-                    <div className="flex gap-2 grid-span-4">
-                        <div>
-                            <Controller
-                                name="franchise"
-                                control={control}
-                                render={({ field }) => {
-                                    return (
-                                        <SelectOtimizadoCustomizado 
-                                            placeholder={"Selecione a franquia"}
-                                            options={franchise}
-                                            field={field}
-                                            width={"300px"}
-                                            heigth={150}
-                                        />
-                                    )
-                                }}
-                            />
-
-                        {errors.franchise &&
-                            <span className="text-sm text-rose-500 pl-1">{errors.franchise.message}</span>
-                        }
-                        </div>
-
-                        <div>
-                            <Controller
-                                name="hours"
-                                control={control}
-                                render={({ field }) => {
-                                    return (
-                                        <SelectOtimizadoCustomizado 
-                                            placeholder={"Selecione as horas"}
-                                            options={hours}
-                                            field={field}
-                                            width={"300px"}
-                                            heigth={150}
-                                        />
-                                    )
-                                }}
-                            />
-                            {errors.hours &&<span className="text-sm text-rose-500 pl-1">{errors.hours.message}</span>}
-                        </div>
-                    </div>
-
-                    <div className="flex gap-2 grid-span-4">
-                        <div>
-                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
-                            {errors.initialDate &&<span className="text-sm text-rose-500 pl-1">{errors.initialDate.message}</span>}
-                        </div>
-
-                        <div>
-                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
-                            {errors.finalDate &&<span className="text-sm text-rose-500 pl-1">{errors.finalDate.message}</span>}
-                        </div>
-                    </div>
-
-                </div>
-
-                <Separator orientation="vertical" className="h-full relative left-10" />
-
-                <div className="flex flex-col items-start justify-start gap-1 col-span-3 ">
-                    <h1 className="text-3xl font-medium mb-6">Variaveis do Contrato</h1>
-                    {contractVariables.map(variable => (
-                            <Controller
-                                control={control}
-                                name={variable.id}
-                                render={({field}) => {
-                                    return(
-                                         <span className="flex gap-1">
-                                            <Checkbox 
-                                                className="rounded-[3px] mb-1" 
-                                                checked={field.value} 
-                                                onCheckedChange={field.onChange}
-                                            />
-                                            <Label>{variable.label}</Label>
-                                            
-                                        </span>
-                                    )
-                                }}
-                            />
-                    ))}
-                </div>
-            </div>
-
-            <Separator orientation="horizontal" className="my-[3rem]"/>
-            
-            <div className="flex flex-row gap-1 items-start">
-                
-                <div className="flex-1">
-                    <span className="text-md font-medium">Produto</span>
-                   
-                    <SelectItemOtimizadoCustomizado
-                        placeholder={"Selecione um produto"}
-                        options={products}
-                        width={"100%"}
-                        heigth={245}
-                        value={item}
-                        onChange={setItem}
-                    />
-                    {item == '0' && <span className="text-sm text-rose-500 pl-1">Selecione no mínimo um produto</span> }
-                </div>
-
-                <div>
-                    <span className="text-md font-medium">Unidades</span>
                     
-                    <SelectItemOtimizadoCustomizado
-                        options={units}
-                        placeholder="Ex: Dias,Semanas"
-                        width="200px"
-                        heigth={245}
-                        value={unit}
-                        onChange={setUnit}
-                    />
-                    { !unit && <span className="text-sm text-rose-500 pl-1">Selecione uma unidade</span> }
-                </div>
-                
-                <div>
-                <span className="text-md font-medium">Quantidade</span>
-                    <Input type="number" className="w-[170px]" placeholder="Ex: 10" value={amount!} onChange={( e ) => setAmount( +e.target.value )}/>
-                    { amount < 1 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span> }
-                </div>
+                    <div>
+                    <span className="text-md font-medium">Quantidade</span>
+                        <Input type="number" className="w-[170px]" placeholder="Ex: 10" value={amount!} onChange={( e ) => setAmount( +e.target.value )}/>
+                        { amount < 1 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span> }
+                    </div>
 
-                <div>
-                    <span className="text-md font-medium">Valor unitario</span>
-                    <Input type="number" className="w-[170px]" placeholder="Ex: 3.65" value={unitPrice!} onChange={(e) => setUnitPrice(+e.target.value)}/>
-                    { unitPrice <= 0 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 0.01</span> }
-                </div>
+                    <div>
+                        <span className="text-md font-medium">Valor unitario</span>
+                        <Input type="number" className="w-[170px]" placeholder="Ex: 3.65" value={unitPrice!} onChange={(e) => setUnitPrice(+e.target.value)}/>
+                        { unitPrice <= 0 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 0.01</span> }
+                    </div>
 
-                <div className="flex h-[64px] items-center">
-                    <Button 
-                        type="button" 
-                        className="self-end transition-opacity" 
-                        onClick={() => addProductToShoppingCart()} 
-                        disabled={disabledButtonAdd()}>
-                            Adicionar
-                    </Button>
+                    <div className="flex h-[64px] items-center">
+                        <Button 
+                            type="button" 
+                            className="self-end transition-opacity" 
+                            onClick={() => addProductToShoppingCart()} 
+                            disabled={disabledButtonAdd()}>
+                                Adicionar
+                        </Button>
+                    </div>
+
                 </div>
 
-            </div>
+                <div className="flex flex-col">
+                        
+                            { shoppingCart.length > 0  ?
+                                <div className="w-[100%] my-10 col-span-8">
+                                    <Card>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableCell className="w-5 text-center">Produto</TableCell>
+                                                    <TableCell className="text-center flex-1">Descrição</TableCell>
+                                                    <TableCell className="w-[9.375rem] text-center">Quantidade</TableCell>
+                                                    <TableCell className="w-[9.375rem] text-center">Unidade</TableCell>
+                                                    <TableCell className="w-[9.375rem] text-center">Valor unitario</TableCell>
+                                                    <TableCell className="w-[9.375rem] text-center">Valor total</TableCell>
+                                                    <TableCell className="w-5 text-center"></TableCell>
+                                                </TableRow>
+                                            </TableHeader>
 
-            <div className="flex flex-col">
-                    
-                        { shoppingCart.length > 0  ?
-                            <div className="w-[100%] my-10 col-span-8">
-                                <Card>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableCell className="w-5 text-center">Produto</TableCell>
-                                                <TableCell className="text-center flex-1">Descrição</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Quantidade</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Unidade</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Valor unitario</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Valor total</TableCell>
-                                                <TableCell className="w-5 text-center"></TableCell>
-                                            </TableRow>
-                                        </TableHeader>
+                                            <TableBody>
+                                            { shoppingCart.map( ( item ) => {
+                                                return (
+                                                    <TableRow key={item.id} className="h-[4.37rem]">
+                                                        <TableCell className="text-center">
+                                                            <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                                                                { item.product }
+                                                            </Card>
+                                                        </TableCell>
 
-                                        <TableBody>
-                                        { shoppingCart.map( ( item ) => {
-                                            return (
-                                                <TableRow key={item.id} className="h-[4.37rem]">
-                                                    <TableCell className="text-center">
-                                                        <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
-                                                            { item.product }
-                                                        </Card>
-                                                    </TableCell>
-
-                                                    <TableCell className="text-start">
-                                                        {/* { item.descProduct } */}
-                                                        <SelectItemUpdateOtimizadoCustomizado
-                                                            placeholder={"Selecione um produto"}
-                                                            options={products}
-                                                            width={"100%"}
-                                                            heigth={250}
-                                                            value={ item.product.toString() }
-                                                            onChange={handleAlterInfo}
-                                                            idItem={item.id}
-                                                            inputName={"product"}
-                                                        />
-                                                    </TableCell>
-
-                                                    <TableCell className="text-center">
-                                                        <Input 
-                                                            value={ item.amount } 
-                                                            className="text-center bg-transparent w-full"
-                                                            onChange={ ( e ) => handleAlterInfo(e.target.value , item.id , "amount")}
-                                                        />
-                                                    </TableCell>
-                                                    
-                                                    <TableCell className="text-start">
-                                                        <SelectItemUpdateOtimizadoCustomizado
-                                                            options={units}
-                                                            placeholder="Ex: Dias,Semanas"
-                                                            width="200px"
-                                                            heigth={245}
-                                                            value={ item.unit }
-                                                            onChange={handleAlterInfo}
-                                                            idItem={item.id}
-                                                            inputName={"unit"}
-                                                        />
-                                                    </TableCell>
-                                                    
-                                                    <TableCell className=" text-center">
-                                                        <Input 
-                                                            value={ (+item.unitPrice) } className="text-center bg-transparent w-full"
-                                                            onChange ={ ( e ) => handleAlterInfo(e.target.value , item.id , "unitPrice")}
-                                                        />
-                                                        
-                                                    </TableCell>
-                                                    
-                                                    <TableCell className="text-center">
-                                                        <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
-                                                            {
-                                                                (item.amount * item.unitPrice).toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'})
-                                                            }
-                                                        </Card>
-                                                    </TableCell>
-
-                                                    <TableCell className="flex items-center justify-center gap-2 text-center">
-                                                            <Trash2 
-                                                                className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
-                                                                onClick={ () => deleteItemShoppingCart(item.id) }
+                                                        <TableCell className="text-start">
+                                                            {/* { item.descProduct } */}
+                                                            <SelectItemUpdateOtimizadoCustomizado
+                                                                placeholder={"Selecione um produto"}
+                                                                options={products}
+                                                                width={"100%"}
+                                                                heigth={250}
+                                                                value={ item.product.toString() }
+                                                                onChange={handleAlterInfo}
+                                                                idItem={item.id}
+                                                                inputName={"product"}
                                                             />
+                                                        </TableCell>
+
+                                                        <TableCell className="text-center">
+                                                            <Input 
+                                                                value={ item.amount } 
+                                                                className="text-center bg-transparent w-full"
+                                                                onChange={ ( e ) => handleAlterInfo(e.target.value , item.id , "amount")}
+                                                            />
+                                                        </TableCell>
+                                                        
+                                                        <TableCell className="text-start">
+                                                            <SelectItemUpdateOtimizadoCustomizado
+                                                                options={units}
+                                                                placeholder="Ex: Dias,Semanas"
+                                                                width="200px"
+                                                                heigth={245}
+                                                                value={ item.unit }
+                                                                onChange={handleAlterInfo}
+                                                                idItem={item.id}
+                                                                inputName={"unit"}
+                                                            />
+                                                        </TableCell>
+                                                        
+                                                        <TableCell className=" text-center">
+                                                            <Input 
+                                                                value={ (+item.unitPrice) } className="text-center bg-transparent w-full"
+                                                                onChange ={ ( e ) => handleAlterInfo(e.target.value , item.id , "unitPrice")}
+                                                            />
+                                                            
+                                                        </TableCell>
+                                                        
+                                                        <TableCell className="text-center">
+                                                            <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                                                                {
+                                                                    (item.amount * item.unitPrice).toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'})
+                                                                }
+                                                            </Card>
+                                                        </TableCell>
+
+                                                        <TableCell className="flex items-center justify-center gap-2 text-center">
+                                                                <Trash2 
+                                                                    className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
+                                                                    onClick={ () => deleteItemShoppingCart(item.id) }
+                                                                />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            })}
+                                            </TableBody>
+
+                                            <TableFooter>
+                                                <TableRow>
+                                                    <TableCell colSpan={4}></TableCell>
+                                                
+                                                    <TableCell colSpan={3} className="text-end">
+                                                        Valor total do contrato: { totalPriceContract.toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'}) }
                                                     </TableCell>
                                                 </TableRow>
-                                            )
-                                        })}
-                                        </TableBody>
+                                            </TableFooter>
+                                        </Table>
+                                    </Card>
+                                </div>
+                                :
+                                <div className="w-full flex items-center justify-center gap-1 my-10">
+                                    
+                                        <Frown className="w-10 h-10 text-zinc-500"/> <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
+                                    
+                                </div>
+                            }
+                        </div>
 
-                                        <TableFooter>
-                                            <TableRow>
-                                                <TableCell colSpan={4}></TableCell>
-                                            
-                                                <TableCell colSpan={3} className="text-end">
-                                                    Valor total do contrato: { totalPriceContract.toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'}) }
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
-                                </Card>
-                            </div>
-                            :
-                            <div className="w-full flex items-center justify-center gap-1 my-10">
-                                
-                                    <Frown className="w-10 h-10 text-zinc-500"/> <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
-                                
-                            </div>
-                        }
-                    </div>
+                <div className="ml-auto">
+                        <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto">Limpar</Button>
 
-            <div className="ml-auto">
-                    <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto">Limpar</Button>
-
-                    <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={shoppingCart.length == 0}>Atualizar Contrato</Button>
-            </div>
-        </form >
+                        <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={shoppingCart.length == 0}>Atualizar Contrato</Button>
+                </div>
+            </form >
+        }
+        </>
     )
 }

@@ -87,6 +87,7 @@ export function SelectOtimizadoCustomizado({
           backgroundColor:'hsl(var(--popover))', 
           color: 'var(--text-popover-foreground)',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', 
+          cursor: 'pointer',
           
           ":hover" : {  
             backgroundColor: '#6c6c6c',
@@ -161,6 +162,7 @@ export function SelectItemOtimizadoCustomizado({ options , placeholder , heigth 
           border: '1px solid #yourBorderColor', 
           backgroundColor: 'hsl(var(--popover))', 
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', 
+          cursor: 'pointer',
           color: 'var(--text-popover-foreground)',
 
           ":hover" : {  
@@ -232,6 +234,7 @@ export function SelectItemUpdateOtimizadoCustomizado({ options , placeholder , h
           zIndex: '99999',
           maxHeight: '96px',
           minWidth: '8rem',
+          cursor: 'pointer',
           overflow: 'hidden',
           border: '1px solid #yourBorderColor', 
           backgroundColor: 'hsl(var(--popover))', 

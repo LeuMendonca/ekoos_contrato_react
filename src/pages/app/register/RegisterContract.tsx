@@ -11,14 +11,13 @@ import { Button } from "../../../components/ui/button"
 
 import { SelectItemOtimizadoCustomizado, SelectOtimizadoCustomizado } from "../../../components/otimizacaoSelect/selectOtimizadoCustomizado"
 import { api } from "../../../services/Axios"
-import { Card } from "../../../components/ui/card"
-import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow } from "../../../components/ui/table"
-import { Frown, Trash2 } from "lucide-react"
+import { Frown } from "lucide-react"
 import { contractVariables, franchise, hours, units } from "./Utilities/Utilities"
 
-import {  toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import axios, { AxiosError } from "axios"
+import { TableProducts } from "../../../components/TableProducts"
 
 const FormContractSchema = z.object({
     client: z.number({
@@ -49,10 +48,10 @@ const FormContractSchema = z.object({
 
 type ContractType = z.infer<typeof FormContractSchema>
 
-interface ProductsProps {
+export interface ProductsProps {
     id: number
     product: string | number
-    descProduct: string
+    descProduct: string 
     unit: string 
     amount: number
     unitPrice: number
@@ -61,7 +60,7 @@ interface ProductsProps {
 export function RegisterContract() {
 
     // Hooks: useForm , useState 
-    const { register, control , handleSubmit , setValue , reset , formState: { errors } } = useForm<ContractType>({
+    const { register, control , handleSubmit , setValue , formState: { errors } } = useForm<ContractType>({
         resolver:  zodResolver(FormContractSchema),
         defaultValues: {
             client: 0,
@@ -92,19 +91,17 @@ export function RegisterContract() {
                 data:data,
                 listItems: shoppingCart,
             })
-
-
         
             if( responsePost.status == 200){
                 toast.success(`${responsePost.data.message}`,{
                     autoClose: 1000
                 })
 
-                setInterval(() => window.location.href = "/" , 2000)
+                setInterval(() => window.location.href = "/index" , 2000)
             }
-        }catch(error){
+        }catch(error: any){
             if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError;
+                const axiosError: any = error as AxiosError;
 
                 const mensageError = axiosError.response.data.message
 
@@ -118,12 +115,16 @@ export function RegisterContract() {
         }
     }
 
+    function resetProduct(){
+        setItem('0')
+        setUnit('')
+        setAmount(0)
+        setUnitPrice(0)
+    }
 
     async function addProductToShoppingCart(){
 
         const descProduct = products.find( c => c.value == item && c)
-
-        console.log(item)
 
         const objNewProduct:ProductsProps = {
             id: id,
@@ -138,10 +139,7 @@ export function RegisterContract() {
 
         setShoppingCart(state => [...state , objNewProduct])
 
-        setItem('0')
-        setUnit('')
-        setAmount(0)
-        setUnitPrice(0)
+        resetProduct()
         setTotalPriceContract(state => state + ( +unitPrice * +amount ) )
 
         toast.success("Produto adicionado com sucesso!",{
@@ -152,8 +150,7 @@ export function RegisterContract() {
     function deleteItemShoppingCart( idProduct: number){
         const contractDeleted = shoppingCart.filter( value => value.id == idProduct)[0]
         
-        const recalculatingTotalContractValue = +contractDeleted["amount"] * +contractDeleted["unitPrice"]
-        setTotalPriceContract(recalculatingTotalContractValue)
+        setTotalPriceContract(+contractDeleted["amount"] * +contractDeleted["unitPrice"])
 
         setShoppingCart( shoppingCart.filter( value => value.id != idProduct ) )
     }
@@ -174,8 +171,6 @@ export function RegisterContract() {
         const products = await api.get('produtos')
         setProducts(products.data)
     }
-
-
 
     useEffect(() => {
         getCostumers();
@@ -252,16 +247,23 @@ export function RegisterContract() {
 
                     <div className="flex gap-2 grid-span-4">
                         <div>
-                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('initialDate', { valueAsDate: false })} />
+                            <Input 
+                                type="date" 
+                                className="block w-[300px] focus:outline-none" 
+                                {...register('initialDate', { valueAsDate: false })} 
+                            />
                             {errors.initialDate &&<span className="text-sm text-rose-500 pl-1">{errors.initialDate.message}</span>}
                         </div>
 
                         <div>
-                            <Input type="date" className="block w-[300px] focus:outline-none" {...register('finalDate', { valueAsDate: false })} />
+                            <Input 
+                                type="date" 
+                                className="block w-[300px] focus:outline-none" 
+                                {...register('finalDate', { valueAsDate: false })} 
+                            />
                             {errors.finalDate &&<span className="text-sm text-rose-500 pl-1">{errors.finalDate.message}</span>}
                         </div>
                     </div>
-
                 </div>
 
                 <Separator orientation="vertical" className="h-full relative left-10" />
@@ -323,14 +325,28 @@ export function RegisterContract() {
                 </div>
                 
                 <div>
-                <span className="text-md font-medium">Quantidade</span>
-                    <Input type="number" className="w-[170px]" placeholder="Ex: 10" value={amount!} onChange={( e ) => setAmount( e.target.value )}/>
+                    <span className="text-md font-medium">Quantidade</span>
+                    <Input 
+                        type="number" 
+                        className="w-[170px]" 
+                        placeholder="Ex: 10" 
+                        value={amount!} 
+                        onChange={( e ) => setAmount( +e.target.value )}
+                    />
+
                     { amount < 1 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 1</span> }
                 </div>
 
                 <div>
                     <span className="text-md font-medium">Valor unitario</span>
-                    <Input type="number" className="w-[170px]" placeholder="Ex: 3.65" value={unitPrice!} onChange={(e) => setUnitPrice(e.target.value)}/>
+                    <Input 
+                        type="number" 
+                        className="w-[170px]" 
+                        placeholder="Ex: 3.65" 
+                        value={unitPrice!} 
+                        onChange={(e) => 
+                        setUnitPrice(+e.target.value)}
+                    />
                     { unitPrice <= 0 && <span className="text-sm text-rose-500 pl-1">Valor minimo: 0.01</span> }
                 </div>
 
@@ -348,61 +364,25 @@ export function RegisterContract() {
 
             <div className="flex flex-col">
                     
-                        { shoppingCart.length > 0  ?
-                            <div className="w-[100%] my-10 col-span-8">
-                                <Card>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableCell className="w-5 text-center">Produto</TableCell>
-                                                <TableCell className="text-center flex-1">Descrição</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Quantidade</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Unidade</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Valor unitario</TableCell>
-                                                <TableCell className="w-[9.375rem] text-center">Valor total</TableCell>
-                                                <TableCell className="w-5 text-center"></TableCell>
-                                            </TableRow>
-                                        </TableHeader>
-
-                                        <TableBody>
-                                        { shoppingCart.map( item => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className=" text-center">{ item.product }</TableCell>
-                                                <TableCell className=" text-center">{ item.descProduct }</TableCell>
-                                                <TableCell className=" text-center">{ item.amount }</TableCell>
-                                                <TableCell className=" text-center">{ item.unit }</TableCell>
-                                                <TableCell className=" text-center">{ (+item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
-                                                <TableCell className=" text-center">{ (+item.amount * +item.unitPrice).toLocaleString('pt-br',{style: 'currency' , currency: 'BRL'}) }</TableCell>
-                                                <TableCell className=" text-center">
-                                                        <Trash2 
-                                                            className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
-                                                            onClick={() => deleteItemShoppingCart(item.id)}
-                                                        />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                        </TableBody>
-
-                                        <TableFooter>
-                                            <TableRow>
-                                            <TableCell colSpan={4}></TableCell>
-                                            <TableCell colSpan={3} className="text-end">Valor total do contrato: {totalPriceContract.toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'})}</TableCell>
-                                            </TableRow>
-                                        </TableFooter>
-                                    </Table>
-                                </Card>
-                            </div>
-                            :
-                            <div className="w-full flex items-center justify-center gap-1 my-10">
-                                
-                                    <Frown className="w-10 h-10 text-zinc-500"/> <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
-                                
-                            </div>
-                        }
-                    </div>
+                { 
+                    shoppingCart.length > 0  ? ( 
+                        <TableProducts 
+                            shoppingCart={shoppingCart} 
+                            totalPriceContract={totalPriceContract}
+                            deleteItemShoppingCart={deleteItemShoppingCart}
+                        /> 
+                        ) : (
+                        <div className="w-full flex items-center justify-center gap-1 my-10">
+                        
+                            <Frown className="w-10 h-10 text-zinc-500"/> 
+                            <span className="text-zinc-500 text-2xl">Nenhum produto adicionado</span>
+                        
+                        </div>
+                        )
+                }
+            </div>
 
             <div className="ml-auto">
-                    <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto">Limpar</Button>
 
                     <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={shoppingCart.length == 0}>Gerar contrato</Button>
             </div>
