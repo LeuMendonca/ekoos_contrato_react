@@ -86,7 +86,7 @@ export function Login() {
         <section className="w-[50%] h-[100%] flex flex-col justify-center items-center bg-slate-300 flex-1">
           <form className="h-3/4 w-3/4 p-5  bg-slate-200 relative" onSubmit={handleSubmit(handleSubmithingLogin)}>
 
-            <div className="w-full flex flex-col items-center translate-y-2/4">
+            <div className="w-full flex flex-col items-center translate-y-1/4">
               <h2 className="text-3xl text-black">
                 Login
               </h2>
@@ -97,7 +97,8 @@ export function Login() {
                   className="bg-gray-700 text-white rounded-sm placeholder:text-white w-3/4 focus:rounded-none" 
                   placeholder="Digite o seu usuário"/>
 
-                <Input 
+                <Input
+                  type="password"
                   { ...register('password') }
                   className="bg-gray-700 text-white rounded-sm placeholder:text-white w-3/4" 
                   placeholder="Digite a sua senha"/>

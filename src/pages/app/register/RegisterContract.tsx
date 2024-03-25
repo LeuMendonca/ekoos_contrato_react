@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,11 +18,13 @@ import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import axios, { AxiosError } from "axios"
 import { TableProducts } from "../../../components/TableProducts"
+import { useAuth } from "../../../context/useAuth"
 
 const FormContractSchema = z.object({
     client: z.number({
         required_error: "Insira um cliente"
     }).min(1, "Insira um cliente"),
+    company: z.string(),
     franchise: z.string({
         required_error: "Insira uma franquia"
     }).min(1, "Insira uma franquia"),
@@ -67,6 +69,8 @@ export function RegisterContract() {
             totalPriceContract: 0
         }
     })
+
+    const { user } = useContext(useAuth)
 
     const [ products , setProducts ] = useState<ProductsProps[]>([])
     const [ costumers , setCostumers ] = useState([])
@@ -173,6 +177,7 @@ export function RegisterContract() {
     }
 
     useEffect(() => {
+        setValue("company" , user.company )
         getCostumers();
         getProducts();
     },[])

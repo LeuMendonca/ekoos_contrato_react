@@ -32,7 +32,7 @@ export function Header(){
                             Home
                         </Link>
                     </nav>
-
+                    
                     <div className="flex items-center gap-3 ml-auto">
                         <ModeToggle/>
                         <DropdownMenu>
@@ -62,6 +62,8 @@ export function Header(){
                             </DropdownMenu>
                     </div>
                 </header>
+
+
             }
         </>
     )

@@ -10,6 +10,10 @@ export const Router = createBrowserRouter([
         path: '/',
         element: <LayoutApp/>,
         children: [
+            {
+                path: '/',
+                loader: () => window.localStorage.getItem('@ekoos_contratos: usuario') ? window.location.href = '/index' : window.location.href = '/login'
+            },
             { 
                 path: '/index',
                 element: <Index/>,

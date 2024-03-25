@@ -64,7 +64,7 @@ interface ProductsUpdateProps {
 export function UpdateContract() {
 
     // Hooks: useForm , useState 
-    const { register, control , handleSubmit , setValue , getValues , formState: { errors } } = useForm<ContractType>({
+    const { register, control , handleSubmit , setValue , formState: { errors } } = useForm<ContractType>({
         resolver:  zodResolver(FormContractSchema),
         defaultValues: {
             client: 0,
@@ -396,8 +396,8 @@ export function UpdateContract() {
                                             { shoppingCart.map( ( item ) => {
                                                 return (
                                                     <TableRow key={item.id} className="h-[4.37rem]">
-                                                        <TableCell className="text-center">
-                                                            <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                                                        <TableCell>
+                                                            <Card className="flex justify-center h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
                                                                 { item.product }
                                                             </Card>
                                                         </TableCell>
@@ -445,8 +445,8 @@ export function UpdateContract() {
                                                             
                                                         </TableCell>
                                                         
-                                                        <TableCell className="text-center">
-                                                            <Card className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
+                                                        <TableCell>
+                                                            <Card className="flex justify-center h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50">
                                                                 {
                                                                     (item.amount * item.unitPrice).toLocaleString('pr-br' , { style: 'currency' , currency: 'BRL'})
                                                                 }
