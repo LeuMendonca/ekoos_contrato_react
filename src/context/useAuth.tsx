@@ -1,19 +1,21 @@
 import { ReactNode, createContext, useState } from "react";
-import { toast } from "react-toastify";
 
 interface UseAuthenticationProps{
     children: ReactNode
 }
 
 export interface UserLoginProps{
-    user: string
+    name: string
     password: string
     company: string
+    nameCompany: string
 }
 
 export interface UserLocalStorageProps {
-    user: string
+    name: string
+    codUser: number
     company: string
+    nameCompany: string
 }
 
 interface useAuthProps{
@@ -30,11 +32,14 @@ export function UseAuthentication({ children }:UseAuthenticationProps){
     const [ user , setUser ] = useState<UserLocalStorageProps>()
 
     async function setUserLocalStorage(user:UserLoginProps){
+
+
         const dataUser = JSON.stringify({
-            user: user.user,
-            company: user.company
+            user: user.name,
+            company: user.company,
+            nameCompany: user.nameCompany,
         })
-        
+
         window.localStorage.setItem('@ekoos_contratos: usuario' , dataUser )
 
     }

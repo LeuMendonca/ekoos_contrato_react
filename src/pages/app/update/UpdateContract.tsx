@@ -13,7 +13,7 @@ import { SelectItemOtimizadoCustomizado, SelectItemUpdateOtimizadoCustomizado, S
 import { api } from "../../../services/Axios"
 import { Card } from "../../../components/ui/card"
 import { Table, TableBody, TableCell, TableFooter, TableHeader, TableRow } from "../../../components/ui/table"
-import { Frown, SquarePen, Trash2 } from "lucide-react"
+import { Frown, Trash2 } from "lucide-react"
 
 import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -61,6 +61,11 @@ interface ProductsUpdateProps {
     unitPrice: number
 }
 
+interface ProductSelectProps {
+    value: string
+    label: string
+}
+
 export function UpdateContract() {
 
     // Hooks: useForm , useState 
@@ -76,7 +81,7 @@ export function UpdateContract() {
 
     const { seq_contrato } = useParams()
 
-    const [ products , setProducts ] = useState<ProductsUpdateProps[]>([])
+    const [ products , setProducts ] = useState<ProductSelectProps[]>([])
     const [ costumers , setCostumers ] = useState([])
 
     const [ shoppingCart , setShoppingCart ] = useState<ProductsUpdateProps[]>([])
@@ -111,9 +116,9 @@ export function UpdateContract() {
                 setInterval(() => window.location.href = "/index" , 2000)
             }
             
-        } catch (error) {
+        } catch (error:any) {
             if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError;
+                const axiosError:any = error as AxiosError;
 
                 const mensageError = axiosError.response.data.message
 
@@ -129,13 +134,16 @@ export function UpdateContract() {
 
     async function addProductToShoppingCart(){
 
+        // const descProduct = products.find( c => c.value == item && c)
         const descProduct = products.find( c => c.value == item && c)
+
+        console.log(descProduct)
 
         const objNewProduct: ProductsUpdateProps = {
             id: id,
             seq_contrato_detalhe: 0,
             product: item,
-            descProduct: descProduct['label'],
+            descProduct: descProduct?.label,
             unit: unit ,
             amount: amount,
             unitPrice: unitPrice
@@ -191,9 +199,9 @@ export function UpdateContract() {
         
         const headerContract = contractID.data
         // Preenchendo os valores do hook form
-        Object.entries( headerContract["contract"] ).forEach(([key , value]) => {
+        Object.entries( headerContract["contract"] ).forEach(( [ key , value ]: [ any , any] ) => {
             if ( key != "totalPriceContract"){
-                setValue(key, value)
+                setValue( key, value )
             }
         })
         
@@ -296,10 +304,10 @@ export function UpdateContract() {
 
                     <div className="flex flex-col items-start justify-start gap-1 col-span-3 ">
                         <h1 className="text-3xl font-medium mb-6">Variaveis do Contrato</h1>
-                        {contractVariables.map(variable => (
+                        {contractVariables.map(( variable: any ) => (
                                 <Controller
                                     control={control}
-                                    name={variable.id}
+                                    name={ variable.id }
                                     render={({field}) => {
                                         return(
                                             <span className="flex gap-1">

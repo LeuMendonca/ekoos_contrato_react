@@ -8,13 +8,12 @@ interface TYPE_OBJETO_SELECT{
 
 const MENU_LIST_ITEM_HEIGHT = 35;
 
-export function MenuList({ options, getValue, maxHeight, children }: MenuListProps<TYPE_OBJETO_SELECT, false, GroupBase<TYPE_OBJETO_SELECT>>){
+export function MenuList({ maxHeight, children }: MenuListProps<TYPE_OBJETO_SELECT, false, GroupBase<TYPE_OBJETO_SELECT>>){
 
     if (!Array.isArray(children)) {
       return null;
     }
   
-    const [selectedOption] = getValue();
     // const initialScrollOffset = options.indexOf(selectedOption) * MENU_LIST_ITEM_HEIGHT;
   
     return (

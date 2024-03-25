@@ -53,10 +53,15 @@ type ContractType = z.infer<typeof FormContractSchema>
 export interface ProductsProps {
     id: number
     product: string | number
-    descProduct: string 
+    descProduct: string | undefined
     unit: string 
     amount: number
     unitPrice: number
+}
+
+interface ProductSelectProps {
+    value: string
+    label: string
 }
 
 export function RegisterContract() {
@@ -72,7 +77,7 @@ export function RegisterContract() {
 
     const { user } = useContext(useAuth)
 
-    const [ products , setProducts ] = useState<ProductsProps[]>([])
+    const [ products , setProducts ] = useState<ProductSelectProps[]>([])
     const [ costumers , setCostumers ] = useState([])
 
     const [ shoppingCart , setShoppingCart ] = useState<ProductsProps[]>([])
@@ -133,7 +138,7 @@ export function RegisterContract() {
         const objNewProduct:ProductsProps = {
             id: id,
             product: item,
-            descProduct: descProduct['label'],
+            descProduct: descProduct?.label ,
             unit: unit ,
             amount: amount,
             unitPrice: unitPrice
@@ -275,7 +280,7 @@ export function RegisterContract() {
 
                 <div className="flex flex-col items-start justify-start gap-1 col-span-3 ">
                     <h1 className="text-3xl font-medium mb-6">Variaveis do Contrato</h1>
-                    {contractVariables.map(variable => (
+                    {contractVariables.map(( variable:any ) => (
                             <Controller
                                 control={control}
                                 name={variable.id}

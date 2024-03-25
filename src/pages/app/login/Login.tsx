@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { toast } from "react-toastify";
 import axios, { AxiosError } from "axios";
 import { useAuth } from "../../../context/useAuth";
+import * as z from 'zod'
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface LoginSubmitProps {
   user: string
@@ -19,13 +21,26 @@ interface CompanyProps {
   label: string
 }
 
+const FormLoginSchema = z.object({
+  user: z.string().min(1,"Insira o seu usuário."),
+  password: z.string().min(1,"Insira sua senha."),
+  company: z.string({
+    required_error: "Selecione uma empresa"
+  }).min(1,"Selecione uma empresa.")
+})
+
+type LoginType = z.infer<typeof FormLoginSchema>
+
 export function Login() {
 
-  const { handleSubmit , register , control} = useForm()
+  const { handleSubmit , register , control , formState: { errors } } = useForm<LoginType>({
+    resolver: zodResolver(FormLoginSchema)
+  })
+
   const [ company , setCompany ] = useState<CompanyProps[]>([])
   const { setUserLocalStorage  } = useContext(useAuth)
 
-  async function handleSubmithingLogin( data: LoginSubmitProps ){
+  async function handleSubmithingLogin( data:LoginSubmitProps ){
     try{
       const responseUser = await api.get('auth', {
         params: {
@@ -40,7 +55,8 @@ export function Login() {
             autoClose: 1000
         })
 
-        setUserLocalStorage(responseUser.config.params)
+        setUserLocalStorage(responseUser.data.data)
+        console.log(responseUser.data.data)
 
         setInterval(() => window.location.href = "/index" , 2000)
     }
@@ -91,41 +107,65 @@ export function Login() {
                 Login
               </h2>
 
-              <div className="w-full flex flex-col gap-0.5 items-center mt-10">
-                <Input
-                  {...register('user')}
-                  className="bg-gray-700 text-white rounded-sm placeholder:text-white w-3/4 focus:rounded-none" 
-                  placeholder="Digite o seu usuário"/>
+              <div className="w-full flex flex-col items-center justify-center mt-10 gap-0.5 ">
 
-                <Input
-                  type="password"
-                  { ...register('password') }
-                  className="bg-gray-700 text-white rounded-sm placeholder:text-white w-3/4" 
-                  placeholder="Digite a sua senha"/>
+                <div className="w-full flex-col flex justify-center items-center order">
+                  { errors.user &&
+                    <span className="text-rose-500 self-start text-sm font-medium ml-[12.5%]">
+                    {errors.user && errors.user.message}
+                  </span>
+                  }
+                  <Input
+                    {...register('user')}
+                    className="bg-gray-700 text-white rounded-sm placeholder:text-white w-3/4 focus:rounded-none" 
+                    placeholder="Digite o seu usuário"/>
+                    
+                </div>
 
-              <Controller
-                name={"company"}
-                control={control}
-                render={ ({field:{onChange}}) => {
-                  return(
-                    <Select onValueChange={onChange}>
-                      <SelectTrigger className="w-3/4 bg-gray-700 text-white rounded-sm">
-                        <SelectValue placeholder="Selecione a empresa"/>
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-700 text-white">
-                        <SelectGroup>
-                          {company.map( company => (
-                            <SelectItem value={company.value}>{company.label}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    )
-                }}
-              />
+                <div className="w-full flex-col flex justify-center items-center">
+                  
+                    {
+                      errors.password &&
+                      <span className="text-rose-500 self-start text-sm font-medium ml-[12.5%]">
+                        {errors.password && errors.password.message}
+                      </span>
+                    }
+
+                  <Input
+                    type="password"
+                    { ...register('password') }
+                    className="bg-gray-700 text-white rounded-sm placeholder:text-white w-3/4" 
+                    placeholder="Digite a sua senha"/>
+                </div>
+
+                <div className="w-full flex-col flex justify-center items-center">
+                  {errors.company &&
+                    <span className="text-rose-500 self-start text-sm font-medium ml-[12.5%]">{errors.company && errors.company.message}</span>
+                  }
+                  <Controller
+                    name={"company"}
+                    control={control}
+                    render={ ({field:{onChange}}) => {
+                      return(
+                        <Select onValueChange={onChange}>
+                          <SelectTrigger className="w-3/4 bg-gray-700 text-white rounded-sm">
+                            <SelectValue placeholder="Selecione a empresa"/>
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-700 text-white">
+                            <SelectGroup>
+                              {company.map( company => (
+                                <SelectItem value={company.value}>{company.label}</SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        )
+                    }}
+                  />
+                </div>
               </div> 
 
-              <Button type="submit" className="w-1/3 mt-3 self-end -translate-x-[38%] text-white">
+              <Button type="submit" className="w-1/3 mt-3 self-end -translate-x-[37%] text-white">
                 Login
               </Button>
             </div>

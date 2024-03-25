@@ -1,7 +1,5 @@
-import Select, { IndicatorSeparatorProps, createFilter } from "react-select";
+import Select, { createFilter } from "react-select";
 import { MenuList } from "./otimizacaoSelect";
-import { ConsoleConstructorOptions } from "console";
-import { ChangeEvent } from "react";
 
 interface SelectOtimizadoCustomizadoProps {
   options: any;
@@ -21,14 +19,6 @@ interface SelectItemOtimizadoCustomizadoProps {
   idItem?: number;
   inputName?: string;
 }
-
-const indicatorSeparatorStyle = {};
-
-const IndicatorSeparator = ({
-  innerProps,
-}: IndicatorSeparatorProps<ConsoleConstructorOptions, true>) => {
-  return <span style={indicatorSeparatorStyle} {...innerProps} />;
-};
 
 export function SelectOtimizadoCustomizado({
   options,
@@ -76,7 +66,7 @@ export function SelectOtimizadoCustomizado({
           ...value,
             color: 'white'
         }),
-        option: (styles , state) => ({
+        option: ( styles ) => ({
           ...styles,
           position: 'relative',
           zIndex: '99999',
@@ -152,7 +142,7 @@ export function SelectItemOtimizadoCustomizado({ options , placeholder , heigth 
           ...styles,
           color: 'hsl(var(-muted-foreground)'
         }),      
-        option: (styles , state) => ({
+        option: (styles ) => ({
           ...styles,
           position: 'relative',
           zIndex: '99999',
@@ -228,7 +218,7 @@ export function SelectItemUpdateOtimizadoCustomizado({ options , placeholder , h
           ...styles,
           color: 'hsl(var(-muted-foreground)'
         }),      
-        option: (styles , state) => ({
+        option: ( styles ) => ({
           ...styles,
           position: 'relative',
           zIndex: '99999',

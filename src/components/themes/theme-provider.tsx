@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { createPortal } from "react-dom"
 
 type Theme = "dark" | "light" | "system"
 
