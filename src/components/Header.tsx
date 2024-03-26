@@ -1,4 +1,4 @@
-import { FilePlus2, Home, LogOut, ReceiptText, User } from "lucide-react";
+import { Building2, FilePlus2, Home, LogOut, ReceiptText, RefreshCcw, User } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -27,19 +27,12 @@ export function Header(){
         getCompany();
       },[])
 
-    function alterCompany( cod: string ){
-        const userLS = getUserLocalStorage()
-        userLS.company = +cod
-
-        setUserLocalStorage(userLS) // Parei nessa parte fazendo alteração da empresa
-    }
-
     // Este componente aparece em todas as páginas, logo , o useEffect abaixo faz efeito em todas as pastas
     useEffect(() => {
         getUserLocalStorage();
     },[])
 
-    console.log( companies )
+    console.log( user )
     return(
         <> 
             { user && 
@@ -58,31 +51,15 @@ export function Header(){
                         </Link>
                     </nav>
                     
-                    <div className="flex items-center gap-3 ml-auto">
+                    <div className="flex flex-1 items-center gap-3 ml-auto justify-end">
 
-                        {/* <span className="flex flex-row gap-1 text-md font-medium border-b-[1px] border-primary pb-1 mt-1">
-                            <RefreshCcw className="w-4 h-4 self-center"/> 
-                            {user.company} - { user.nameCompany }
-                        </span> */}
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger>
-                                <Button variant={"outline"} className="duration-500 hover:text-black">
-                                    <span className="flex items-center justify-center gap-1">
-                                        { user.nameCompany }
-                                    </span>
-                                </Button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent>
-                                { companies.map(company => (
-                                    company.value != user.company && 
-                                        <DropdownMenuItem 
-                                            className="cursor-pointer"
-                                            onClick={() => alterCompany(company.value)}>{ company.label }</DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex  flex-row items-center justify-center h-full px-4 py-2">
+                            <span className="flex flex-row items-center gap-1 text-md font-medium pb-1 mt-1 cursor-default">
+                                <Building2 className="w-4 h-4 self-center"/> 
+                                {user.company} - { user.nameCompany }
+                            </span>
+                        </div>
+                        
 
                         <ModeToggle/>
 

@@ -13,6 +13,7 @@ interface ContractProps {
     currencyContract: number
     dateStart: string
     dateEnd: string
+    vencido: boolean
 }
 
 interface TableContractProps{
@@ -100,7 +101,7 @@ export function ContractTableRow( { contract , getContracts }:TableContractProps
         }
     }
     return (
-        <TableRow>
+        <TableRow className={contract.vencido ? ( 'text-rose-500' ) : ('')}>
             <TableCell className="text-center">{contract.seq_contrato}</TableCell>
             <TableCell className="text-center">{contract.cod_pessoa}</TableCell>
             <TableCell className="font-semibold">{contract.name}</TableCell>

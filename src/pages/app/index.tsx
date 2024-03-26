@@ -7,12 +7,16 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/useAuth";
 import { Pagination } from "../../components/Pagination";
 import { Link } from "react-router-dom";
+import { Shapes, Square } from "lucide-react";
+import { Card } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
 
 export function Index(){
     
     const [ queryContract , setQueryContract ] = useState<string | number>('')
     const [ contracts , setContracts ] = useState([])
     const { user , getUserLocalStorage } = useContext( useAuth )
+    const [ visibleLabel , setVisibleLabel ] = useState(false)
 
     // Paginação
     const [ totalPages , setTotalPages ] = useState(0)
@@ -36,6 +40,10 @@ export function Index(){
         setTotalPages(contractsList["paginationContracts"]["totalPages"])
     }
 
+    function handleVisibleLabel(){
+        setVisibleLabel(state => !state)
+    }
+    
     useEffect( () => {
         getContracts();
     },[ queryContract , currencyPage ])
@@ -43,7 +51,8 @@ export function Index(){
     return(
         <>
             { (user && contracts.length > 0 ) ? 
-                <main className="p-2 px-10">
+                <main className="p-2 px-5">
+
                     <div className="pt-4 pb-2 flex flex-row gap-2">
                         <Input 
                             placeholder="Filtre por um cliente" 
@@ -53,7 +62,35 @@ export function Index(){
                         />
                     </div>
 
-                    <Table className="border">
+                    <Table className="border relative">
+                        <div className="absolute right-0.5 top-0.5">
+                            <Button 
+                                className="h-8 w-5 relative bg-rose-400 hover:bg-rose-500"
+                                onMouseEnter={() => handleVisibleLabel()}
+                                onMouseOut={() => handleVisibleLabel()}
+                            >
+                                ?
+                            </Button>
+
+                            { visibleLabel &&
+                                <Card className="whitespace-nowrap p-5 absolute mt-1 opacity-95 right-0">
+                                    <span className="font-medium">
+                                        Rótulo
+                                    </span>
+
+                                    <span className="flex flex-row gap-1">
+                                        <Square className="fill-rose-500 w-5 h-5" strokeWidth={0}/>
+                                        Vencidos
+                                    </span>
+
+                                    <span className="flex flex-row gap-1">
+                                        <Square className="fill-black w-5 h-5" strokeWidth={0}/>
+                                        Em andamento
+                                    </span>
+                             </Card>
+                            }
+                        </div>
+
                         <TableHeader>
                             <TableRow>
                                 <TableCell className="w-[100px] text-center font-bold">Sequencial</TableCell>
@@ -74,7 +111,8 @@ export function Index(){
                                 /> )}
                         </TableBody>
                     </Table>
-                
+
+                    
                     { contracts.length > 0 &&
                         <Pagination setCurrencyPage={setCurrencyPage} totalPages={totalPages} currencyPage={currencyPage}/>    
                     }
