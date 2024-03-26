@@ -65,7 +65,7 @@ export function Index(){
                     <Table className="border relative">
                         <div className="absolute right-0.5 top-0.5">
                             <Button 
-                                className="h-8 w-5 relative bg-rose-400 hover:bg-rose-500"
+                                className="h-8 w-4 relative bg-rose-400 hover:bg-rose-500"
                                 onMouseEnter={() => handleVisibleLabel()}
                                 onMouseOut={() => handleVisibleLabel()}
                             >
