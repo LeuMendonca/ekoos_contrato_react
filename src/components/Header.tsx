@@ -15,17 +15,7 @@ interface Company{
 
 export function Header(){
 
-    const { user , getUserLocalStorage , deleteUserLocalStorage , setUserLocalStorage } = useContext(useAuth)
-    const [ companies , setCompanies ] = useState<Company[]>([])
-
-    async function getCompany(){
-        const responseCompany = await api.get('empresas')
-            setCompanies(responseCompany.data)
-        }
-    
-      useEffect(() => {
-        getCompany();
-      },[])
+    const { user , getUserLocalStorage , deleteUserLocalStorage  } = useContext(useAuth)
 
     // Este componente aparece em todas as páginas, logo , o useEffect abaixo faz efeito em todas as pastas
     useEffect(() => {
@@ -54,7 +44,7 @@ export function Header(){
                     <div className="flex flex-1 items-center gap-3 ml-auto justify-end">
 
                         <div className="flex  flex-row items-center justify-center h-full px-4 py-2">
-                            <span className="flex flex-row items-center gap-1 text-md font-medium pb-1 mt-1 cursor-default">
+                            <span className="flex flex-row gap-2 text-sm font-medium pb-1 cursor-default mt-[5px] border-b-[1px] border-primary items-end">
                                 <Building2 className="w-4 h-4 self-center"/> 
                                 {user.company} - { user.nameCompany }
                             </span>

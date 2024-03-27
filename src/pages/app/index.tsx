@@ -63,9 +63,9 @@ export function Index(){
                     </div>
 
                     <Table className="border relative">
-                        <div className="absolute right-0.5 top-0.5">
+                        <div className="absolute right-1 top-1">
                             <Button 
-                                className="h-8 w-4 relative bg-rose-400 hover:bg-rose-500"
+                                className="h-7 w-3 relative bg-rose-400 hover:bg-rose-500"
                                 onMouseEnter={() => handleVisibleLabel()}
                                 onMouseOut={() => handleVisibleLabel()}
                             >
@@ -78,7 +78,7 @@ export function Index(){
                                         Rótulo
                                     </span>
 
-                                    <span className="flex flex-row gap-1">
+                                    <span className="flex flex-row gap-1 mt-2">
                                         <Square className="fill-rose-500 w-5 h-5" strokeWidth={0}/>
                                         Vencidos
                                     </span>
@@ -94,7 +94,7 @@ export function Index(){
                         <TableHeader>
                             <TableRow>
                                 <TableCell className="w-[100px] text-center font-bold">Sequencial</TableCell>
-                                <TableCell className="w-[100px] text-center font-bold">Código</TableCell>
+                                <TableCell className="w-[100px] text-center font-bold whitespace-nowrap">Código do Cliente</TableCell>
                                 <TableCell className="flex-1 font-bold">Nome</TableCell>
                                 <TableCell className="w-[160px] text-center font-bold">Valor do Contrato</TableCell>
                                 <TableCell className="w-[160px] text-center font-bold">Data Inicial</TableCell>

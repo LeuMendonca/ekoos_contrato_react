@@ -80,7 +80,7 @@ export function SelectOtimizadoCustomizado({
           cursor: 'pointer',
           
           ":hover" : {  
-            backgroundColor: '#6c6c6c',
+            backgroundColor: '#ececec',
           },
         }),
         menu: (styles) => ({
@@ -156,7 +156,7 @@ export function SelectItemOtimizadoCustomizado({ options , placeholder , heigth 
           color: 'var(--text-popover-foreground)',
 
           ":hover" : {  
-            backgroundColor: '#6c6c6c',
+            backgroundColor: '#ececec',
           }
         }),
         menu: (styles) => ({
@@ -232,7 +232,7 @@ export function SelectItemUpdateOtimizadoCustomizado({ options , placeholder , h
           color: 'var(--text-popover-foreground)',
 
           ":hover" : {  
-            backgroundColor: '#6c6c6c',
+            backgroundColor: '#ececec',
           }
         }),
         menu: (styles) => ({

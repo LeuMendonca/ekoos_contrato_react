@@ -10,15 +10,21 @@ export function Pagination({setCurrencyPage , totalPages , currencyPage}: Pagina
    
   return (
     <div className="flex flex-row gap-1 mt-2 w-full justify-center">
-        <Button onClick={() => setCurrencyPage(0)}>Primeira</Button>
+        <Button 
+            className="text-white"
+            onClick={() => setCurrencyPage(0)}
+        >
+            Primeira
+        </Button>
 
                 { Array(totalPages).fill('').map((_, index  ) => {
                     const indexPageCurrency = index + 1 
                     return (
                         <Button 
                             className={ 
-                                index === currencyPage ? "bg-zinc-600 hover:bg-zinc-600" :  
+                                index === currencyPage ? "bg-zinc-600 hover:bg-zinc-600 text-white" :  
                                 indexPageCurrency  > currencyPage + 2 || indexPageCurrency < currencyPage  ? "hidden" : ''
+                                + 'text-white'
                             } 
                             onClick={() => setCurrencyPage( index )}  
                             key={index}
@@ -28,7 +34,12 @@ export function Pagination({setCurrencyPage , totalPages , currencyPage}: Pagina
                     )
                 })}
                 
-        <Button onClick={() => setCurrencyPage(totalPages - 1)}>Ultima</Button>
+        <Button 
+            onClick={() => setCurrencyPage(totalPages - 1)}
+            className="text-white"
+        >
+            Ultima
+        </Button>
     </div>
   )
 }

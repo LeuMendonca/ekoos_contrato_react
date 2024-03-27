@@ -221,8 +221,8 @@ export function UpdateContract() {
         <form className="flex flex-col gap-1 shadow p-5 mt-2" onSubmit={ handleSubmit(handleSubmitUpdateContract)}>
            
                 <div className="grid grid-cols-8 flex-row gap-3">
-                    <div className="col-span-4 flex flex-col gap-2">
-                        <h1 className="text-3xl font-medium mb-6">Atualização Contrato {seq_contrato}</h1>
+                    <div className="col-span-4 flex items-center flex-col gap-2">
+                        <h1 className="text-3xl font-medium mb-6">Atualização Contrato <span className="text-rose-500">{seq_contrato}</span></h1>
 
                         <div>
                         <Controller
