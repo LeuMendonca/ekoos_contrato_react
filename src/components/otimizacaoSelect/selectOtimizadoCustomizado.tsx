@@ -114,7 +114,6 @@ export function SelectItemOtimizadoCustomizado({ options , placeholder , heigth 
       menuPlacement="bottom"
       classNamePrefix="react-select"
       menuShouldScrollIntoView={false}
-      
 
       styles={{
         control: () => ({

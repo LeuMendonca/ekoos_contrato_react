@@ -43,9 +43,11 @@ const FormContractSchema = z.object({
     chvTransAuto: z.boolean().default(false).optional(),
     chvTransManual: z.boolean().default(false).optional(),
     combustivel: z.boolean().default(false).optional(),
+    quantidadeCombustivel: z.number().optional(),
     instalacao: z.boolean().default(false).optional(),
     manutencaoPeriodica: z.boolean().default(false).optional(),
     transporte: z.boolean().default(false).optional(),
+    distanciaTransporte: z.number().optional(),
 })
 
 type ContractType = z.infer<typeof FormContractSchema>
@@ -67,7 +69,7 @@ interface ProductSelectProps {
 export function RegisterContract() {
 
     // Hooks: useForm , useState 
-    const { register, control , handleSubmit , setValue , formState: { errors } } = useForm<ContractType>({
+    const { register, control , handleSubmit , setValue , watch , formState: { errors } } = useForm<ContractType>({
         resolver:  zodResolver(FormContractSchema),
         defaultValues: {
             client: 0,
@@ -75,7 +77,7 @@ export function RegisterContract() {
         }
     })
 
-    const { user } = useContext(useAuth)
+    const { getUserLocalStorage } = useContext(useAuth)
 
     const [ products , setProducts ] = useState<ProductSelectProps[]>([])
     const [ costumers , setCostumers ] = useState([])
@@ -87,7 +89,10 @@ export function RegisterContract() {
     const [ unit , setUnit ] = useState('')
     const [ amount , setAmount ] = useState(0)
     const [ unitPrice , setUnitPrice ] = useState(0)
-    const [ totalPriceContract , setTotalPriceContract ] = useState(0)
+    // const [ totalPriceContract , setTotalPriceContract ] = useState(0)
+    const totalPriceContract = shoppingCart.reduce( ( acc , item ) => {
+        return acc + ( item.amount * item.unitPrice)
+    },0)
 
     useEffect(() =>{
         setValue('totalPriceContract' , totalPriceContract)
@@ -149,7 +154,6 @@ export function RegisterContract() {
         setShoppingCart(state => [...state , objNewProduct])
 
         resetProduct()
-        setTotalPriceContract(state => state + ( +unitPrice * +amount ) )
 
         toast.success("Produto adicionado com sucesso!",{
             autoClose: 2500
@@ -157,10 +161,6 @@ export function RegisterContract() {
     }
 
     function deleteItemShoppingCart( idProduct: number){
-        const contractDeleted = shoppingCart.filter( value => value.id == idProduct)[0]
-        
-        setTotalPriceContract(+contractDeleted["amount"] * +contractDeleted["unitPrice"])
-
         setShoppingCart( shoppingCart.filter( value => value.id != idProduct ) )
     }
 
@@ -168,6 +168,11 @@ export function RegisterContract() {
         if( item == '0' || !unit || amount == 0 || unitPrice == 0 ){
             return true
         }
+    }
+
+    function getCompany(){
+        const userLS = getUserLocalStorage()
+        setValue('company' , userLS.company)
     }
 
     // Requisições API
@@ -181,10 +186,19 @@ export function RegisterContract() {
         setProducts(products.data)
     }
 
+    const watchTransporte =  watch("transporte")
+    const watchCombustivel =  watch("combustivel")
+
     useEffect(() => {
-        setValue("company" , user.company )
+        if( !watchTransporte ) setValue('distanciaTransporte' , 0)
+        
+        if( !watchCombustivel ) setValue('quantidadeCombustivel' , 0)
+    },[watchTransporte , watchCombustivel])
+
+    useEffect(() => {
         getCostumers();
         getProducts();
+        getCompany();
     },[])
 
     return (
@@ -286,14 +300,39 @@ export function RegisterContract() {
                                 name={variable.id}
                                 render={({field}) => {
                                     return(
-                                         <span className="flex gap-1">
+                                         <span className="flex gap-1 items-center">
                                             <Checkbox 
-                                                className="rounded-[3px] mb-1" 
+                                                className="rounded-[3px]" 
                                                 checked={field.value} 
                                                 onCheckedChange={field.onChange}
                                             />
                                             <Label>{variable.label}</Label>
-                                            
+
+                                            {
+                                                    ( variable.id == 'transporte' && field.value ) && 
+                                                        <Input 
+                                                            type="number"
+                                                            className={errors.distanciaTransporte ? 
+                                                                "focus: outline-rose-500 border-rose-500 h-7" : "h-7"} 
+                                                            placeholder="Distancia do transporte"
+                                                            {...register('distanciaTransporte',
+                                                                { setValueAs: (v) => v === "" ? undefined : parseInt(v, 10) })
+                                                            }
+                                                        /> 
+                                                }
+
+                                            {
+                                                ( variable.id == 'combustivel' && field.value ) &&
+                                                    <div>
+                                                        <Input 
+                                                            type="number"
+                                                            step={0.01}
+                                                            className="h-7 w-[220px]" 
+                                                            placeholder="Quantidade de combustivel"
+                                                            {...register('quantidadeCombustivel',{ setValueAs: (v) => v === "" ? undefined : parseInt(v, 10) })}
+                                                        />
+                                                    </div>
+                                            }
                                         </span>
                                     )
                                 }}

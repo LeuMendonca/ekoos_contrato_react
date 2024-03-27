@@ -44,9 +44,11 @@ const FormContractSchema = z.object({
     chvTransAuto: z.boolean().default(false).optional(),
     chvTransManual: z.boolean().default(false).optional(),
     combustivel: z.boolean().default(false).optional(),
+    quantidadeCombustivel: z.number().optional(),
     instalacao: z.boolean().default(false).optional(),
     manutencaoPeriodica: z.boolean().default(false).optional(),
     transporte: z.boolean().default(false).optional(),
+    distanciaTransporte: z.number().optional(),
 });
 
 type ContractType = z.infer<typeof FormContractSchema>
@@ -69,11 +71,14 @@ interface ProductSelectProps {
 export function UpdateContract() {
 
     // Hooks: useForm , useState 
-    const { register, control , handleSubmit , setValue , formState: { errors } } = useForm<ContractType>({
+    const { register, control , handleSubmit , watch , setValue , formState: { errors } } = useForm<ContractType>({
         resolver:  zodResolver(FormContractSchema),
         defaultValues: {
             client: 0,
-            totalPriceContract: 0
+            totalPriceContract: 0,
+
+            quantidadeCombustivel: 0,
+            distanciaTransporte: 0
         }
     })
 
@@ -134,7 +139,6 @@ export function UpdateContract() {
 
     async function addProductToShoppingCart(){
 
-        // const descProduct = products.find( c => c.value == item && c)
         const descProduct = products.find( c => c.value == item && c)
 
         console.log(descProduct)
@@ -209,6 +213,15 @@ export function UpdateContract() {
 
         setId(headerContract["contractDetails"].length + 1)
     }
+
+    const watchTransporte =  watch("transporte")
+    const watchCombustivel =  watch("combustivel")
+
+    useEffect(() => {
+        if( !watchTransporte ) setValue('distanciaTransporte' , 0)
+        
+        if( !watchCombustivel ) setValue('quantidadeCombustivel' , 0)
+    },[watchTransporte , watchCombustivel])
 
     useEffect(() => {
         getCostumers();
@@ -310,14 +323,39 @@ export function UpdateContract() {
                                     name={ variable.id }
                                     render={({field}) => {
                                         return(
-                                            <span className="flex gap-1">
+                                            <span className="flex gap-1 items-center">
                                                 <Checkbox 
-                                                    className="rounded-[3px] mb-1" 
+                                                    className="rounded-[3px]" 
                                                     checked={field.value} 
                                                     onCheckedChange={field.onChange}
                                                 />
                                                 <Label>{variable.label}</Label>
                                                 
+                                                {
+                                                    ( variable.id == 'transporte' && field.value ) && 
+                                                        <Input 
+                                                            type="number"
+                                                            className={errors.distanciaTransporte ? 
+                                                                "focus: outline-rose-500 border-rose-500 h-7" : "h-7"} 
+                                                            placeholder="Distancia do transporte"
+                                                            {...register('distanciaTransporte',
+                                                                { setValueAs: (v) => v === "" ? 0 : parseInt(v, 10) })
+                                                            }
+                                                        /> 
+                                                }
+
+                                            {
+                                                ( variable.id == 'combustivel' && field.value ) &&
+                                                    <div>
+                                                        <Input 
+                                                            type="number"
+                                                            step={0.01}
+                                                            className="h-7 w-[220px]" 
+                                                            placeholder="Quantidade de combustivel"
+                                                            {...register('quantidadeCombustivel',{ setValueAs: (v) => v === "" ? 0 : parseInt(v, 10) })}
+                                                        />
+                                                    </div>
+                                            }
                                             </span>
                                         )
                                     }}
@@ -461,7 +499,7 @@ export function UpdateContract() {
                                                             </Card>
                                                         </TableCell>
 
-                                                        <TableCell className="flex items-center justify-center gap-2 text-center">
+                                                        <TableCell className="flex items-center justify-center gap-2 text-center h-[73px]">
                                                                 <Trash2 
                                                                     className="w-5 h-5 text-rose-500 cursor-pointer hover:text-rose-600 transition"
                                                                     onClick={ () => deleteItemShoppingCart(item.id) }
@@ -494,8 +532,6 @@ export function UpdateContract() {
                         </div>
 
                 <div className="ml-auto">
-                        <Button type="button" variant={"default"} className="w-[150px] mt-4 ml-auto disabled:!cursor-not-allowed disabled:pointer-events-auto">Limpar</Button>
-
                         <Button variant={"destructive"} className="w-[300px] mt-4 ml-3 disabled:!cursor-not-allowed disabled:pointer-events-auto" type="submit" disabled={shoppingCart.length == 0}>Atualizar Contrato</Button>
                 </div>
             </form >

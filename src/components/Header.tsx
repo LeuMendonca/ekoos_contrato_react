@@ -1,17 +1,11 @@
-import { Building2, FilePlus2, Home, LogOut, ReceiptText, RefreshCcw, User } from "lucide-react";
+import { Building2, FilePlus2, Home, LogOut, ReceiptText, User } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { ModeToggle } from "./themes/mode-toggle";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { useAuth } from "../context/useAuth";
-import { api } from "../services/Axios";
-
-interface Company{
-    label: string 
-    value: string
-}
 
 export function Header(){
 
@@ -80,8 +74,6 @@ export function Header(){
                         </DropdownMenu>
                     </div>
                 </header>
-
-
             }
         </>
     )

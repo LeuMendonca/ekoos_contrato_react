@@ -116,10 +116,10 @@ export function ContractTableRow( { contract , getContracts }:TableContractProps
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent>
-                            <DropdownMenuItem><NavLink to={`/update/${contract.seq_contrato}`}>Atualizar</NavLink></DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => closeContract(contract.seq_contrato)}>Concluir</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => deleteContract(contract.seq_contrato)}>Excluir</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => printContract(contract.seq_contrato)}>Imprimir</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer"><NavLink to={`/update/${contract.seq_contrato}`}>Atualizar</NavLink></DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => closeContract(contract.seq_contrato)}>Concluir</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => deleteContract(contract.seq_contrato)}>Excluir</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => printContract(contract.seq_contrato)}>Imprimir</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

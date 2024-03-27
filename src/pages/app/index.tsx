@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../context/useAuth";
 import { Pagination } from "../../components/Pagination";
 import { Link } from "react-router-dom";
-import { Shapes, Square } from "lucide-react";
+import { Square } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 
@@ -63,9 +63,11 @@ export function Index(){
                     </div>
 
                     <Table className="border relative">
-                        <div className="absolute right-1 top-1">
+                        <div className="absolute right-0 top-0">
                             <Button 
-                                className="h-7 w-3 relative bg-rose-400 hover:bg-rose-500"
+                                variant={"link"}
+                                className="h-7 w-3 relative text-rose-500"
+                                // className="h-7 w-3 relative bg-rose-400 hover:bg-rose-500"
                                 onMouseEnter={() => handleVisibleLabel()}
                                 onMouseOut={() => handleVisibleLabel()}
                             >
